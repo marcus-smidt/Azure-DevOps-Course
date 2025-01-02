@@ -5,7 +5,7 @@
 **Custom tenant created after Entra ID P2 trial activated**
 ![ScreenShot](screenshots_task1/tenant.png)
 
-**Users created **
+**Users created**
 ![ScreenShot](screenshots_task1/users.png)
 
 **Admins and Devs Groups**
