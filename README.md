@@ -51,7 +51,7 @@
 **Antonio from Devs group logged in via CLI**
 ![ScreenShot](screenshots_task4/antonio-login.png)
 
-**Secret retrieval using CLI (created earlier by root user)**
+**Secret retrieval using CLI (created earlier)**
 ![ScreenShot](screenshots_task4/secret-retrieved-cli.png)
 
 ## Task 5
