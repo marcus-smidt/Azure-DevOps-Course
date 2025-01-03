@@ -20,4 +20,38 @@
 **Permissions inheritance example on second user**
 ![ScreenShot](screenshots_task1/permissions_inherited.png)
 
+## Task 2 (skipped)
+
+## Task 3
+**Resource Viewer custom role JSON file**
+![ScreenShot](screenshots_task3/resource_viewer.png)
+
+**Role definition created**
+![ScreenShot](screenshots_task3/role_definition.png)
+
+**Roles assignment sample command**
+![ScreenShot](screenshots_task3/role_assignment.png)
+
+**Admins group role verification**
+![ScreenShot](screenshots_task3/admins_verification.png)
+
+**Developers group role verification (no permissions to use View my access, but Resource group is visible, so assignment is successful)**
+![ScreenShot](screenshots_task3/developers_verification.png)
+
+## Task 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
