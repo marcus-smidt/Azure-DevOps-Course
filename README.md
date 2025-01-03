@@ -39,7 +39,22 @@
 ![ScreenShot](screenshots_task3/developers_verification.png)
 
 ## Task 4
+**Azure Key Vault created**
+![ScreenShot](screenshots_task4/key-vault-general.png)
 
+**No list access for user Marcus**
+![ScreenShot](screenshots_task4/no-list-access.png)
+
+**Access policy applied for Developers group**
+![ScreenShot](screenshots_task4/access-policy.png)
+
+**Antonio from Devs group logged in via CLI**
+![ScreenShot](screenshots_task4/antonio-login.png)
+
+**Secret retrieval using CLI (created earlier by root user)**
+![ScreenShot](screenshots_task4/secret-retrieved-cli.png)
+
+## Task 5
 
 
 
