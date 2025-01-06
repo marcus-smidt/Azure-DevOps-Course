@@ -55,6 +55,30 @@
 ![ScreenShot](screenshots_task4/secret-retrieved-cli.png)
 
 ## Task 5
+**Key Vault deployment**
+![ScreenShot](screenshots_task5/key-vault-deployment.png)
+
+**Policy definition**
+![ScreenShot](screenshots_task5/policy-definition.png)
+
+**Policy assignment**
+![ScreenShot](screenshots_task5/policy-assignment.png)
+
+**Policy state evalueation for specific Resource Group**
+```bash
+$ az policy state trigger-scan --resource-group "azure-devops-rg"
+```
+
+**Non-compliant policy**
+![ScreenShot](screenshots_task5/key-vault-non-compliant.png)
+
+**Non-compliant resource detailed view**
+![ScreenShot](screenshots_task5/non-compliance-detailed.png)
+
+**Optional: Deny policy in action**
+![ScreenShot](screenshots_task5/deny-policy-in-action.png)
+
+
 
 
 
