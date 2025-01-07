@@ -20,7 +20,29 @@
 **Permissions inheritance example on second user**
 ![ScreenShot](screenshots_task1/permissions_inherited.png)
 
-## Task 2 (skipped)
+## Task 2
+**SAML toolkit**
+![ScreenShot](screenshots_task2/toolkit-saml.png)
+
+**SAML configs**
+![ScreenShot](screenshots_task2/saml-config.png)
+
+![ScreenShot](screenshots_task2/saml-config-2.png)
+
+**SAML login**
+![ScreenShot](screenshots_task2/saml-login.png)
+
+**Test user login**
+![ScreenShot](screenshots_task2/test-user-login.png)
+
+**MFA conditional access policy**
+![ScreenShot](screenshots_task2/mfa-conditional-policy.png)
+
+**MFA for high-risk**
+![ScreenShot](screenshots_task2/mfa-high-risk.png)
+
+**MFA in action**
+![ScreenShot](screenshots_task2/mfa-in-action.png)
 
 ## Task 3
 **Resource Viewer custom role JSON file**
@@ -77,6 +99,8 @@ $ az policy state trigger-scan --resource-group "azure-devops-rg"
 
 **Optional: Deny policy in action**
 ![ScreenShot](screenshots_task5/deny-policy-in-action.png)
+
+## Task 6
 
 
 
