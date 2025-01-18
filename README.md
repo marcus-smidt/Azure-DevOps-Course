@@ -175,7 +175,7 @@ output "public_ip" {
 **RDP security alignment (restricted by IP)**
 ![ScreenShot](screenshots_task2/source-ip-restricted.png)
 
-**IIS installation**
+**IIS installation page look**
 ![ScreenShot](screenshots_task2/IIS%20installation.png)
 
 **Server Manager overview**
@@ -187,9 +187,6 @@ output "public_ip" {
 **Custom html page added**
 ![ScreenShot](screenshots_task2/custom-page.png)
 
-**Checking open ports by using nmap CLI tool**
+**Checking open ports by using nmap CLI tool (http and rdp)**
 ![ScreenShot](screenshots_task2/ports-overview.png)
-
-**RDP connecting by using Remmina Linux tool**
-![ScreenShot](screenshots_task2/rdp-test.png)
 
