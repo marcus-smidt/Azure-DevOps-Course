@@ -147,5 +147,5 @@ output "public_ip" {
 }
 ```
 
-**Nginx root location**
+**Nginx default page overview after the VM is deployed**
 ![ScreenShot](screenshots_task1/nginx.png)
