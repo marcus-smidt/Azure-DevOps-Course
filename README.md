@@ -149,3 +149,21 @@ output "public_ip" {
 
 **Nginx default page overview after the VM is deployed**
 ![ScreenShot](screenshots_task1/nginx.png)
+
+**Testing ssh connection (local ssh keys used)**
+![ScreenShot](screenshots_task1/ssh-test.png)
+
+**Open ports scanning by using nmap CLI tool**
+![ScreenShot](screenshots_task1/port-scanning.png)
+
+**Checking connection to other ports by using telnet CLI tool**
+![ScreenShot](screenshots_task1/port-scanning-extra.png)
+
+**VM and supplemental resources overview**
+![ScreenShot](screenshots_task1/cloud-resources.png)
+
+**Resources overview from terraform state perspective**
+![ScreenShot](screenshots_task1/state-list.png)
+
+**VM and supplemental resources cleanup**
+![ScreenShot](screenshots_task1/clean-up.png)
