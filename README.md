@@ -167,3 +167,29 @@ output "public_ip" {
 
 **VM and supplemental resources cleanup**
 ![ScreenShot](screenshots_task1/clean-up.png)
+
+## Task 2
+**Win VM creation**
+![ScreenShot](screenshots_task2/vm-created.png)
+
+**RDP security alignment (restricted by IP)**
+![ScreenShot](screenshots_task2/source-ip-restricted.png)
+
+**IIS installation**
+![ScreenShot](screenshots_task2/IIS%20installation.png)
+
+**Server Manager overview**
+![ScreenShot](screenshots_task2/server-manager-overview.png)
+
+**Default page look**
+![ScreenShot](screenshots_task2/default-page.png)
+
+**Custom html page added**
+![ScreenShot](screenshots_task2/custom-page.png)
+
+**Checking open ports by using nmap CLI tool**
+![ScreenShot](screenshots_task2/ports-overview.png)
+
+**RDP connecting by using Remmina Linux tool**
+![ScreenShot](screenshots_task2/rdp-test.png)
+
