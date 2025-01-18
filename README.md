@@ -172,10 +172,14 @@ output "public_ip" {
 **Win VM creation**
 ![ScreenShot](screenshots_task2/vm-created.png)
 
+```bash
+The B1s size specified in task description is not suitable, so bigger VM size was chosen - B2s
+```
+
 **RDP security alignment (restricted by IP)**
 ![ScreenShot](screenshots_task2/source-ip-restricted.png)
 
-**IIS installation page look**
+**IIS installation page look, roles/features installation**
 ![ScreenShot](screenshots_task2/IIS%20installation.png)
 
 **Server Manager overview**
