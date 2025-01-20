@@ -202,6 +202,20 @@ The B1s size specified in task description is not suitable, so bigger VM size wa
 For security concerns 22 port was not opened, only 80 HTTP
 ```
 
+**Custom data feature usage by applying cloud-config**
+
+```bash
+#cloud-config
+package_update: true
+package_upgrade: true
+packages:
+  - nginx
+runcmd:
+  - echo "vm1" > /var/www/html/index.nginx-debian.html
+  - systemctl restart nginx
+  - systemctl enable nginx
+```
+
 **Standard Load Balancer created**
 ![ScreenShot](screenshots_task3/lb-created.png)
 
