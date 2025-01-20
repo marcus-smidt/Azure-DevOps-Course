@@ -233,3 +233,26 @@ runcmd:
 
 **Load Balancing in action overview**
 ![ScreenShot](screenshots_task3/lb-testing.png)
+
+## Task 4
+**Virtual Machine Scale Set created and configured**
+![ScreenShot](screenshots_task4/vmss-created.png)
+
+**Load Balancer created and configured**
+![ScreenShot](screenshots_task4/lb-created.png)
+
+**Load Balancing Testing (custom script was applied to the VMSS)**
+![ScreenShot](screenshots_task4/lb-testing.png)
+
+**Overview of the instances before any manipulations**
+![ScreenShot](screenshots_task4/instances-before-issue.png)
+
+**Enabling autoscaling for Virtual Maching Scale Set**
+![ScreenShot](screenshots_task4/autoscaling-on.png)
+
+**Simulating an issue with one of the instances (stopping and deleting)**
+![ScreenShot](screenshots_task4/vm-stopped-and-deleted.png)
+
+**Instances overview after the issue happened to one of the instances**
+![ScreenShot](screenshots_task4/instances-after-issue.png)
+
