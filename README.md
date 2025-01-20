@@ -256,3 +256,22 @@ runcmd:
 **Instances overview after the issue happened to one of the instances**
 ![ScreenShot](screenshots_task4/instances-after-issue.png)
 
+
+## Task 5
+**Running the app (prerequisites for local setup)**
+![ScreenShot](screenshots_task5/running-the-app.png)
+
+**Running the app on the localhost port 5000**
+![ScreenShot](screenshots_task5/sample-app-locally.png)
+
+**Root location of the deployed app**
+![ScreenShot](screenshots_task5/deployed-app.png)
+
+**Web app logs seen in the CLI**
+![ScreenShot](screenshots_task5/app-logs.png)
+
+```bash
+Reference used https://github.com/Azure-Samples/msdocs-python-flask-webapp-quickstart
+```
+**Resources overview at Azure Portal**
+![ScreenShot](screenshots_task5/portal-overview.png)
