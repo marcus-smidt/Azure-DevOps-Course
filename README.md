@@ -194,3 +194,28 @@ The B1s size specified in task description is not suitable, so bigger VM size wa
 **Checking open ports by using nmap CLI tool (http and rdp)**
 ![ScreenShot](screenshots_task2/ports-overview.png)
 
+## Task 3
+**2 Linux VMs were created (with LB option enabled)**
+![ScreenShot](screenshots_task3/vms-created.png)
+
+```bash
+For security concerns 22 port was not opened, only 80 HTTP
+```
+
+**Standard Load Balancer created**
+![ScreenShot](screenshots_task3/lb-created.png)
+
+**LB frontend configuration applied**
+![ScreenShot](screenshots_task3/fe-config.png)
+
+**LB backend pool configuration applied**
+![ScreenShot](screenshots_task3/be-pool.png)
+
+**LB health probe configuration**
+![ScreenShot](screenshots_task3/healthprobe.png)
+
+**LB routing rule created for port 80 HTTP**
+![ScreenShot](screenshots_task3/lb-rule.png)
+
+**Load Balancing in action overview**
+![ScreenShot](screenshots_task3/lb-testing.png)
