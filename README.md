@@ -368,4 +368,5 @@ def DeleteAvenger(req: func.HttpRequest) -> func.HttpResponse:
 **Testing another HTTP trigger (delete endpoint)**
 ![ScreenShot](screenshots_task6/delete-avengers.png)
 
+**Reference https://www.youtube.com/watch?v=lpZCwzYVNpA&ab_channel=JohnSavill%27sTechnicalTraining**
 
