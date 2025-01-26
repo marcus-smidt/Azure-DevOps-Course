@@ -90,5 +90,61 @@ sudo umount /mnt/practice3fileshare
 sudo rm -rf /mnt/practice3fileshare
 df -h | grep practice3fileshare
 ```
+## Task 5
+**Azure Storage Table overview**
+![ScreenShot](screenshots_task5/table-overview-se.png)
+
+**Populating the table with some data**
+![ScreenShot](screenshots_task5/adding-table-data.png)
+
+**Running table queries**
+![ScreenShot](screenshots_task5/running-query.png)
+
+**Deleting table entities using specific properties**
+![ScreenShot](screenshots_task5/entity-deleted.png)
+
+```bash
+az storage entity delete \
+  --account-name practice3task1 \
+  --account-key ${storage-access-key} \
+  --table-name employeedata \
+  --partition-key Employees \
+  --row-key 1
+```
+
+## Task 6
+**Creating SAS token for testing blob access (read-only access)**
+![ScreenShot](screenshots_task6/sas-blob-read-list.png)
+
+**Connecting to the blob using Azure Storage Explorer and SAS URL**
+![ScreenShot](screenshots_task6/connection-via-sas-blob.png)
+
+**Testing blob operations (e.g file upload)**
+![ScreenShot](screenshots_task6/upload-not-permitted.png)
+
+**Creating SAS token for testing file share access (read and write access)**
+![ScreenShot](screenshots_task6/sas-fileshare-read-write.png)
+
+**Testing file share operations(aploading a file to file share)**
+![ScreenShot](screenshots_task6/uploaded-via-sas-fileshare.png)
+
+**Creating SAS token for testing table operations(full access)**
+![ScreenShot](screenshots_task6/sas-table-full-access.png)
+
+**Connecting to the table using SAS token**
+![ScreenShot](screenshots_task6/table-access-with-sas.png)
+
+**Testing table operations (deleting the table from Storage Explorer directly)**
+![ScreenShot](screenshots_task6/table-deleted-with-sas.png)
+
+**Cleaning up the SAS token accesses by rotating signing key (key1)**
+![ScreenShot](screenshots_task6/cleaning-up.png)
+
+
+
+
+
+
+
 
 
