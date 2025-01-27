@@ -174,6 +174,79 @@ az ad sp create-for-rbac --name "secure-storage-sp-test" --role "Storage Blob Da
 **Testing file upload with our newly created Service Principal (no access to Blob)**
 ![ScreenShot](screenshots_task7/testing-permissions-for-second-sp.png)
 
+**Azure Virtual Machine created with Managed Identity**
+```bash
+az vm create \
+  --name task7vm-managed-test \
+  --resource-group xxxxx \
+  --image Ubuntu2204 \
+  --admin-username azureuser \
+  --admin-password ${adminpwd} \
+  --assign-identity "/subscriptions/xxxxx/resourceGroups/MarkiianKhymynets/providers/Microsoft.ManagedIdentity/userAssignedIdentities/task7-managed-identity"
+{
+  "fqdns": "",
+  "id": "/subscriptions/xxxxx/resourceGroups/xxxxx/providers/Microsoft.Compute/virtualMachines/task7vm-managed-test",
+  "identity": {
+    "systemAssignedIdentity": "",
+    "userAssignedIdentities": {
+      "/subscriptions/xxxxx/resourceGroups/xxxxx/providers/Microsoft.ManagedIdentity/userAssignedIdentities/task7-managed-identity": {
+        "clientId": "xxxxx",
+        "principalId": "xxxxx"
+      }
+    }
+  },
+  "location": "centralus",
+  "macAddress": "xxxxx",
+  "powerState": "VM running",
+  "privateIpAddress": "10.0.0.4",
+  "publicIpAddress": "xxxxx",
+  "resourceGroup": "xxxxx",
+  "zones": ""
+}
+```
+
+**Role Assignment with System-Managed Identity for Blob access**
+![ScreenShot](screenshots_task7/role-assignment-for-identity.png)
+
+**Accessing the blob from the Azure Virtual Machine CLI**
+```bash
+az login --identity --username xxxxx
+```
+```bash
+az storage blob list \
+  --account-name practice3task1 \
+  --container-name practice3container \
+  --auth-mode login
+```
+
+```bash
+[
+  {
+    "container": "practice3container",
+    "content": "",
+    "deleted": null,
+    "encryptedMetadata": null,
+    "encryptionKeySha256": null,
+    "encryptionScope": null,
+    "hasLegalHold": null,
+    "hasVersionsOnly": null,
+    "immutabilityPolicy": {
+      "expiryTime": null,
+      "policyMode": null
+    },
+    "isAppendBlobSealed": null,
+    "isCurrentVersion": null,
+    "lastAccessedOn": null,
+    "metadata": {},
+    "name": "1984-Orwell.epub",
+    "objectReplicationDestinationPolicy": null,
+    "objectReplicationSourceProperties": [],
+    "properties": {
+```
+
+
+
+
 
 
 
