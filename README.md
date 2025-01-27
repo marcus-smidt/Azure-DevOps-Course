@@ -243,6 +243,34 @@ az storage blob list \
     "objectReplicationSourceProperties": [],
     "properties": {
 ```
+## Task 8
+**Azure SQL database and SQL server created via an Azure Portal**
+![ScreenShot](screenshots_task8/sql%20database%20created.png)
+
+**Creating new Table called Products using SQL Query (SQL authenticated previously)**
+```bash
+CREATE TABLE Products (
+    ID INT PRIMARY KEY IDENTITY(1,1),
+    Name NVARCHAR(50) NOT NULL,
+    Price DECIMAL(10, 2) NOT NULL
+);
+```
+
+**Populating previously created table with some data for testing**
+```bash
+INSERT INTO Products (Name, Price) 
+VALUES 
+    ('Laptop', 999.99),
+    ('Smartphone', 599.99),
+    ('Tablet', 299.99);
+```
+
+**Verifying that data is in place**
+```bash
+SELECT * FROM Products;
+```
+![ScreenShot](screenshots_task8/all-products.png)
+
 
 
 
