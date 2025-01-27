@@ -140,6 +140,40 @@ az storage entity delete \
 **Cleaning up the SAS token accesses by rotating signing key (key1)**
 ![ScreenShot](screenshots_task6/cleaning-up.png)
 
+## Task 7
+**Creating an Azure Service Principal with Blob Data Contributor role**
+```bash
+az ad sp create-for-rbac --name "secure-storage-sp" --role "Storage Blob Data Contributor" --scopes /subscriptions/xxxxx/resourceGroups/xxxxx/providers/Microsoft.Storage/storageAccounts/practice3task1
+```
+**Logging from Azure CLI terminal using the IDs provided after SP creation**
+```bash
+az login --service-principal \
+  --username xxxxx \
+  --password yyyyy \
+  --tenant zzzzz
+```
+
+**Testing assigned role for Service Principal by uploading a sample file**
+```bash
+ az storage blob upload \
+  --account-name practice3task1 \
+  --container-name practice3container \
+  --name test.txt \
+  --file ~/Desktop/samplefile.txt \
+  --auth-mode login
+```
+
+**The sample file was successfully uploaded to Azure Storage Account blob container**
+![ScreenShot](screenshots_task7/blob-uploaded-with-sp.png)
+
+**Creating another Service Principal with insufficient permissions**
+```bash
+az ad sp create-for-rbac --name "secure-storage-sp-test" --role "Storage Blob Data Reader" --scopes xxxxx/resourceGroups/xxxxx/providers/Microsoft.Storage/storageAccounts/practice3task1
+```
+
+**Testing file upload with our newly created Service Principal (no access to Blob)**
+![ScreenShot](screenshots_task7/testing-permissions-for-second-sp.png)
+
 
 
 
