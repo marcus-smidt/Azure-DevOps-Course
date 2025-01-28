@@ -285,6 +285,9 @@ SELECT * FROM Products;
 **PITR option available (LTR restore can't be taken or triggered manually)**
 ![ScreenShot](screenshots_task9/pitr-availble.png)
 
+```bash
+Long-term retention (LTR) is not currently compatible with Azure SQL Database when utilizing the serverless configuration with automatic pause
+```
 
 
 
