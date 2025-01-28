@@ -289,6 +289,68 @@ SELECT * FROM Products;
 Long-term retention (LTR) is not currently compatible with Azure SQL Database when utilizing the serverless configuration with automatic pause
 ```
 
+## Task 10
+**Azure Cosmos DB account overview**
+![ScreenShot](screenshots_task10/cosmos-db-account.png)
+
+**Sample data populated into database and container created before**
+![ScreenShot](screenshots_task10/data-populated.png)
+
+```bash
+{
+  "id": "1",
+  "name": "Smartphone",
+  "category": "Electronics",
+  "price": 699
+},
+{
+  "id": "2",
+  "name": "Laptop",
+  "category": "Electronics",
+  "price": 999
+},
+{
+  "id": "3",
+  "name": "Shoes",
+  "category": "Apparel",
+  "price": 79
+}
+```
+
+**Consistency levels table overview**
+
+| Consistency Level  | Latency       | Availability | Consistency Strength |
+| ------------------ | ------------- | ------------ | -------------------- |
+|  Strong            |  High         |  Lowest      |  Highest             |
+|  Bounded Staleness |  Moderate     |  High        |  High                |
+|  Session           |  Low          |  High        |  Medium              |
+|  Consistent Prefix |  Low          |  High        |  Medium              |
+|  Eventual          |  Lowest       |  Highest     |  Lowest              |
+
+
+![ScreenShot](screenshots_task10/consistency-overview.png)
+
+**Global replication overview**
+![ScreenShot](screenshots_task10/global-replication.png)
+
+**Quering the database before replication**
+![ScreenShot](screenshots_task10/query1.png)
+
+**Manual Failover from East US to West Europe (read region to write region)**
+![ScreenShot](screenshots_task10/manual-failover.png)
+![ScreenShot](screenshots_task10/manual-failover-performed.png)
+
+**Quering the database after manual failover to West Europe**
+![ScreenShot](screenshots_task10/query2.png)
+
+
+
+
+
+
+
+
+
 
 
 
