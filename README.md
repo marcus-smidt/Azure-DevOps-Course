@@ -271,6 +271,21 @@ SELECT * FROM Products;
 ```
 ![ScreenShot](screenshots_task8/all-products.png)
 
+## Task 9
+**Azure SQL Database created using the Azure Portal**
+![ScreenShot](screenshots_task9/db-created.png)
+
+**Azure SQL Server as a prerequisite for SQL database**
+![ScreenShot](screenshots_task9/sql-server-overview.png)
+
+**Long Term Retention policy alignment and Overview**
+![ScreenShot](screenshots_task9/ltr-policy-created.png)
+![ScreenShot](screenshots_task9/ltr-policy-overview.png)
+
+**PITR option available (LTR restore can't be taken or triggered manually)**
+![ScreenShot](screenshots_task9/pitr-availble.png)
+
+
 
 
 
