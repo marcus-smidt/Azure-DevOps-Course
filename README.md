@@ -70,6 +70,61 @@ docker push practice4task1.azurecr.io/flask-aci-app:v1
 ![ScreenShot](screenshots_task2/application-deployed.png)
 
 ## Task 3
+**Bash script for deploying sample Azure Container App service**
+```bash
+#!/bin/bash
+
+set -e
+
+echo "Adding Azure Container Apps extension to Azure CLI"
+# az extension add -n containerapp --upgrade
+
+echo "Ensuring Microsoft.Web and Microsoft.App providers are registered with current Azure Subscription"
+# az provider register --namespace Microsoft.Web
+# az provider register --namespace Microsoft.App
+
+
+rgName=MarkiianKhymynets
+location=eastus
+
+acaEnvironmentName=env-practice4task3
+lawName=practice4task3
+image=thorstenhans/gopher:hero
+
+echo "Creating Log Analytics Workspace"
+
+lawClientId=$(az monitor log-analytics workspace create --workspace-name $lawName -g $rgName --query customerId -o tsv)
+lawClientSecret=$(az monitor log-analytics workspace get-shared-keys -n $lawName -g $rgName --query primarySharedKey -o tsv)
+
+echo "Creating Azure Container App Environment"
+
+az containerapp env create -n $acaEnvironmentName -g $rgName --logs-workspace-id $lawClientId --logs-workspace-key $lawClientSecret -l $location
+echo ""
+
+echo "Deploying Container to Azure Container App"
+
+fqdn=$(az containerapp create -n hello-aca -g $rgName --environment $acaEnvironmentName --image $image --target-port 8080 --ingress external --query configuration.ingress.fqdn -o tsv)
+echo ""
+
+echo -e "Our Azure Container App is up and running at https://${fqdn}"
+```
+
+**Azure Container App successfully deployed**
+![ScreenShot](screenshots_task3/container-app-deployed.png)
+
+**Browsing sample application URL**
+![ScreenShot](screenshots_task3/browsing-the-app.png)
+
+**Scaling to 3 replicas using new revision/deployment**
+![ScreenShot](screenshots_task3/scaling-to-3.png)
+
+**Replicas detailed overview on the Azure Portal**
+![ScreenShot](screenshots_task3/replicas.png)
+
+
+
+
+
 
 
 
