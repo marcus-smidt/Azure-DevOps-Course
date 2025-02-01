@@ -54,6 +54,22 @@ docker push practice4task1.azurecr.io/flask-aci-app:v1
 ![ScreenShot](screenshots_task1/app-redeployed.png)
 
 ## Task 2
+**Modified sample code for Flask application written in Python**
+![ScreenShot](screenshots_task2/sample-app-flask.png)
+
+**Logging into ACR, building and pushing new docker image**
+```bash
+ $ az acr login --name practice4task1
+ $ docker build -t practice4task1.azurecr.io/flask-aci-app:v2 .
+ $ docker push practice4task1.azurecr.io/flask-aci-app:v2
+```
+**New ACI container deployed with MESSAGE environment variable specified**
+![ScreenShot](screenshots_task2/aci-deployed.png)
+
+**Browsing <public IP>:5000 for application demo**
+![ScreenShot](screenshots_task2/application-deployed.png)
+
+## Task 3
 
 
 
