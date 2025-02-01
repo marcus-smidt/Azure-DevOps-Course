@@ -51,7 +51,7 @@ docker push practice4task1.azurecr.io/flask-aci-app:v1
 ![ScreenShot](screenshots_task1/aci-overview.png)
 
 **Sample Flask application deployed using ACI+ACR**
-![ScreenShot](screenshots_task1/application-deployed.png)
+![ScreenShot](screenshots_task1/app-redeployed.png)
 
 ## Task 2
 
