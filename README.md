@@ -192,6 +192,136 @@ nginx        LoadBalancer   10.0.117.112   64.236.77.138   80:31366/TCP   16s
 ![ScreenShot](screenshots_task5/nginx-default.png)
 
 ## Task 6
+**AKS cluster from task 5 was used**
+**Sample node.js application code**
+```bash
+#server.js
+const http = require('http');
+const port = process.env.PORT || 3000;
+
+const requestHandler = (req, res) => {
+  res.end('Hello from AKS!');
+};
+
+const server = http.createServer(requestHandler);
+server.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
+```
+
+```bash
+#package.json
+{
+  "name": "simple-node-app",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "http": "^0.0.1-security"
+  }
+}
+```
+
+```bash
+#Dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package.json .
+
+COPY server.js .
+
+RUN npm install
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
+```
+**Logging into ACR created in task 1, building the image and pushing to repository**
+```bash
+az acr login --name practice4task1
+az acr build --registry practice4task1 --image simple-node-app:v1 .
+az acr repository list --name practice4task1 --output table
+```
+
+**Getting into the cluster environment from local Ubuntu CLI**
+```bash
+az aks get-credentials --resource-group xxxxx --name practice4task5
+```
+
+**Manifest file for node.js app deployment**
+```bash
+#app-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-node-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-node-app
+  template:
+    metadata:
+      labels:
+        app: simple-node-app
+    spec:
+      containers:
+      - name: simple-node-app
+        image: practice4task1.azurecr.io/simple-node-app:v1
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-node-app-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: simple-node-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+```
+
+**Attaching ACR to AKS using az CLI**
+```bash
+az aks update -n practice4task5 -g xxxxx --attach-acr practice4task1
+AAD role propagation done[############################################]  100.000 - Running ..
+```
+
+**Optional: Another option would be to create a secret to access ACR**
+```bash 
+kubectl create secret docker-registry acr-secret \
+  --docker-server=<xxxxx>.azurecr.io \
+  --docker-username=<xxxxx> \
+  --docker-password=<xxxxx> \
+  --docker-email=<xxxxx>
+```
+```bash
+spec:
+  containers:
+  - name: simple-node-app
+    image: <xxxxxx>.azurecr.io/simple-node-app:v1
+    ports:
+    - containerPort: 3000
+  imagePullSecrets:
+  - name: acr-secret
+```
+
+**Applying manifest file and checking the PUBLIC-IP in the browser**
+```bash
+kubectl get services
+NAME                      TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)        AGE
+kubernetes                ClusterIP      10.0.0.1       <none>          443/TCP        59m
+simple-node-app-service   LoadBalancer   10.0.72.81     64.236.107.94   80:30093/TCP   15m
+```
+![ScreenShot](screenshots_task6/node-app-browsing.png)
 
 
 
