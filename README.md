@@ -323,9 +323,142 @@ simple-node-app-service   LoadBalancer   10.0.72.81     64.236.107.94   80:30093
 ```
 ![ScreenShot](screenshots_task6/node-app-browsing.png)
 
+## Task 7
+**Creating ConfigMap and Secret using the AKS cluster from previous task**
+```bash
+#configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  APP_ENV: "production"
+  APP_VERSION: "1.0.0"
+```
 
+```bash
+kubectl apply -f configmap.yaml
 
+kubectl get configmap app-config -o yaml
 
+apiVersion: v1
+data:
+  APP_ENV: production
+  APP_VERSION: 1.0.0
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"APP_ENV":"production","APP_VERSION":"1.0.0"},"kind":"ConfigMap","metadata":{"annotations":{},"name":"app-config","namespace":"default"}}
+  creationTimestamp: "2025-02-02T21:19:15Z"
+  name: app-config
+  namespace: default
+  resourceVersion: "106908"
+  uid: e1116220-7e21-484b-bcfb-xxxxx
+```
+
+```bash
+#secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secret
+type: Opaque
+data:
+  API_KEY: bXktc2VjcmV0LWFwaS1rZXk=   # This is base64 encoded for "my-secret-api-key"
+```
+
+```bash
+kubectl apply -f secret.yaml
+
+kubectl get secret app-secret -o yaml
+
+apiVersion: v1
+data:
+  API_KEY: bXktc2VjcmV0LWFwaS1rZXk=
+kind: Secret
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"API_KEY":"bXktc2VjcmV0LWFwaS1rZXk="},"kind":"Secret","metadata":{"annotations":{},"name":"app-secret","namespace":"default"},"type":"Opaque"}
+  creationTimestamp: "2025-02-02T21:23:45Z"
+  name: app-secret
+  namespace: default
+  resourceVersion: "107982"
+  uid: c8a6d4f4-c91a-4679-ba37-xxxxx
+type: Opaque
+```
+
+**Manifest file for node.js app with Secret and ConfigMap usage**
+```bash
+#app-with-configmap-and-secret.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-node-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-node-app
+  template:
+    metadata:
+      labels:
+        app: simple-node-app
+    spec:
+      containers:
+      - name: simple-node-app
+        image: practice4task1.azurecr.io/simple-node-app:v1
+        ports:
+        - containerPort: 3000
+        env:
+        - name: APP_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: APP_ENV
+        - name: APP_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: APP_VERSION
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: API_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-node-app-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: simple-node-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+```
+
+**Validating that ConfigMap and Secret were used in the pods**
+```bash
+kubectl exec -it simple-node-app-cd9bd97b9-7mdvd -- printenv | grep APP_
+APP_ENV=production
+APP_VERSION=1.0.0
+SIMPLE_NODE_APP_SERVICE_PORT=tcp://10.0.72.81:80
+SIMPLE_NODE_APP_SERVICE_PORT_80_TCP_ADDR=10.0.72.81
+SIMPLE_NODE_APP_SERVICE_PORT_80_TCP_PROTO=tcp
+SIMPLE_NODE_APP_SERVICE_SERVICE_PORT=80
+SIMPLE_NODE_APP_SERVICE_PORT_80_TCP=tcp://10.0.72.81:80
+SIMPLE_NODE_APP_SERVICE_SERVICE_HOST=10.0.72.81
+SIMPLE_NODE_APP_SERVICE_PORT_80_TCP_PORT=80
+```
+```bash
+kubectl exec -it simple-node-app-cd9bd97b9-7mdvd -- printenv | grep API_KEY
+API_KEY=my-secret-api-key
+```
 
 
 
