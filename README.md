@@ -121,6 +121,40 @@ echo -e "Our Azure Container App is up and running at https://${fqdn}"
 **Replicas detailed overview on the Azure Portal**
 ![ScreenShot](screenshots_task3/replicas.png)
 
+## Task 4
+**Azure Container Instance created with hello-world container**
+![ScreenShot](screenshots_task4/aci-created.png)
+
+**Browsing the Public IP address of the container**
+![ScreenShot](screenshots_task4/container-test.png)
+
+**Enabling system-managed identity for ACI service**
+![ScreenShot](screenshots_task4/managed-identity-on.png)
+
+**Assigning our Identity with Key Vault Reader role (onle metadata view)**
+![ScreenShot](screenshots_task4/role-assign-reader.png)
+
+**Testing on reading the metadata and the actual Secret created before**
+![ScreenShot](screenshots_task4/reader-test.png)
+![ScreenShot](screenshots_task4/key-vault-reader.png)
+
+**Assigning the needed role for secret retrieval e.g Secret User**
+![ScreenShot](screenshots_task4/role-assign-user.png)
+
+**Testing Secret retrieval from our ACI container environment**
+![ScreenShot](screenshots_task4/secret-user.png)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
