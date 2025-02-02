@@ -144,6 +144,55 @@ echo -e "Our Azure Container App is up and running at https://${fqdn}"
 **Testing Secret retrieval from our ACI container environment**
 ![ScreenShot](screenshots_task4/secret-user.png)
 
+## Task 5
+**Azure Kubernetes Service cluster created (dev/test, D-series node pool 1-3)**
+![ScreenShot](screenshots_task5/cluster-created.png)
+
+**Logging into cluster environment using Azure CloudShell and interacting with cluster**
+```bash
+Requesting a Cloud Shell.Succeeded. 
+Connecting terminal...
+
+Welcome to Azure Cloud Shell
+
+Type "az" to use Azure CLI
+Type "help" to learn about Cloud Shell
+
+Your Cloud Shell session will be ephemeral so no files or system changes will persist beyond your current session.
+x [ ~ ]$ az aks get-credentials --resource-group xxx --name practice4task5
+
+Merged "practice4task5" as current context in /home/x/.kube/config
+
+x [ ~ ]$ kubectl get nodes
+
+NAME                                STATUS   ROLES    AGE    VERSION
+aks-agentpool-39279877-vmss000000   Ready    <none>   7m6s   v1.30.7
+
+x [ ~ ]$ kubectl get pods
+No resources found in default namespace.
+x [ ~ ]$ kubectl get pods -n=system
+No resources found in system namespace.
+
+x [ ~ ]$ kubectl create deployment nginx --image=nginx
+deployment.apps/nginx created
+
+x [ ~ ]$ kubectl expose deployment nginx --port=80 --type=LoadBalancer
+service/nginx exposed
+
+x [ ~ ]$ kubectl get pods
+NAME                    READY   STATUS    RESTARTS   AGE
+nginx-bf5d5cf98-299lh   1/1     Running   0          22s
+
+x [ ~ ]$ kubectl get svc
+NAME         TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)        AGE
+kubernetes   ClusterIP      10.0.0.1       <none>          443/TCP        9m15s
+nginx        LoadBalancer   10.0.117.112   64.236.77.138   80:31366/TCP   16s
+```
+**Nginx default page overview browsing the EXTERNAL-IP provided above**
+![ScreenShot](screenshots_task5/nginx-default.png)
+
+## Task 6
+
 
 
 
