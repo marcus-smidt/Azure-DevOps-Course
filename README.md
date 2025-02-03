@@ -459,6 +459,79 @@ SIMPLE_NODE_APP_SERVICE_PORT_80_TCP_PORT=80
 kubectl exec -it simple-node-app-cd9bd97b9-7mdvd -- printenv | grep API_KEY
 API_KEY=my-secret-api-key
 ```
+## Task 8
+**Simple Nginx deployment to our AKS cluster**
+```bash
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-app
+  template:
+    metadata:
+      labels:
+        app: nginx-app
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-app-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+```
+
+**Manually scaling the deployment in the CLI**
+```bash
+kubectl scale deployment nginx-app --replicas=3
+```
+
+**Setting up a Horizontal Pod Autoscaler (HPA)**
+```bash
+kubectl get deployment metrics-server -n kube-system
+
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+kubectl autoscale deployment nginx-app --cpu-percent=50 --min=1 --max=5
+```
+
+**Simulation the load using stress tool running on one of the pods**
+```bash
+kubectl exec -it <nginx-pod-name> -- sh
+
+apt-get update && apt-get install -y stress
+
+stress --cpu 2 --timeout 300
+```
+
+**HPA in action after stress is overloading our pod**
+![ScreenShot](screenshots_task8/hpa-in-action.png)
+
+
+
+
 
 
 
