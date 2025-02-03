@@ -630,6 +630,38 @@ kubectl set image deployment/simple-app simple-app=practice4task1.azurecr.io/sim
 
 **PS Rolling update is a default strategy for AKS. Other ones: Blue/Green, Canary, A/B Testing**
 
+## Bonus task
+**Simple app from previous task was used (ACR image and deployment.yaml)**
+
+**Workflow**
+```bash
+1) ArgoCD CLI installed
+2) Separate namespace created
+$ kubectl create namespace argocd
+3) ArgoCD installed
+$ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+4) Public IP exposed
+$ kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+5) Admin password
+$ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+6) Private GitHub repository prepared with Personal Access Token generated
+7) Adding repo to ArgoCD
+$ argocd repo add https://github.com/xxxxx/aks-gitops-demo.git \
+  --username xxxxx \
+  --password xxxxx
+8) Application created in ArgoCD web UI (repo added as source, AKS cluster with default namespace as destination)
+```
+**Results: ArgoCD web UI and application after deployment.yaml pushed to repo and synced**
+![ScreenShot](screenshots_task10/argocd-web-portal.png)
+![ScreenShot](screenshots_task10/argocd-synced.png)
+
+**Some changes to the deployment.yaml were pushed (v1-->v2)**
+![ScreenShot](screenshots_task10/sync2.png)
+
+![ScreenShot](screenshots_task10/final-image.png)
+
+
+
 
 
 
