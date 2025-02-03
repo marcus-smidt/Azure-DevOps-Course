@@ -529,6 +529,106 @@ stress --cpu 2 --timeout 300
 **HPA in action after stress is overloading our pod**
 ![ScreenShot](screenshots_task8/hpa-in-action.png)
 
+## Task 9
+**Prerequisite files for simple application**
+```bash
+#index.html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Version 1</title>
+</head>
+<body style="background-color: lightblue; text-align: center;">
+  <h1>Welcome to Version 1 🚀</h1>
+</body>
+</html>
+```
+
+```bash
+#Dockerfile
+FROM nginx:alpine
+COPY index.html /usr/share/nginx/html/index.html
+```
+
+**Building and pushing image V1 to Azure Container Registry**
+```bash
+docker build -t practice4task1.azurecr.io/simple-app:v1 .
+
+az acr login --name practice4task1
+
+docker push practice4task1.azurecr.io/simple-app:v1
+```
+
+```bash
+#deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple-app
+  template:
+    metadata:
+      labels:
+        app: simple-app
+    spec:
+      containers:
+      - name: simple-app
+        image: practice4task1.azurecr.io/simple-app:v1
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-app-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: simple-app
+```
+
+**Browsing EXTERNAL-IP provided by LoadBalancer service in CLI output**
+![ScreenShot](screenshots_task9/deploy1.png)
+
+
+**Changing the content of our index.html to version 2.0 e.g color change**
+```bash
+#index.html version 2.0
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Version 2</title>
+</head>
+<body style="background-color: lightgreen; text-align: center;">
+  <h1>Welcome to Version 2 🚀</h1>
+</body>
+</html>
+```
+
+**Building new image and pushing to the Azure Container Registry with tag v2**
+```bash
+docker build -t practice4task1.azurecr.io/simple-app:v2 .
+docker push practice4task1.azurecr.io/simple-app:v2
+```
+
+**Performing rolling update from the CLI**
+```bash
+kubectl set image deployment/simple-app simple-app=practice4task1.azurecr.io/simple-app:v2
+```
+
+**Reviewing rolling update status and monitoring for any changes in the application**
+![ScreenShot](screenshots_task9/deploy2.png)
+
+![ScreenShot](screenshots_task9/rolling-update-in-action.png)
+
+**PS Rolling update is a default strategy for AKS. Other ones: Blue/Green, Canary, A/B Testing**
 
 
 
