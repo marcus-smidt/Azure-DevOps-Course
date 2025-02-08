@@ -288,6 +288,51 @@ $ Remove-AzStorageAccount -ResourceGroupName "Markiianxxxxx" -Name "practice5tas
 ```
 
 ## Task 5
+**Note: existing user was used in this task**
+**Adding an assignment using az cli and Azure PowerShell**
+```bash
+$ az role assignment create --assignee x-x-x-x-x --role "Reader" --scope /subscriptions/x-x-x-x-x/resourceGroups/practice5task5-rg
+{
+  "condition": null,
+  "conditionVersion": null,
+  "createdBy": null,
+  "createdOn": "2025-02-08T15:30:17.041065+00:00",
+  "delegatedManagedIdentityResourceId": null,
+  "description": null,
+  "id": "/subscriptions/xxxxx/resourceGroups/practice5task5-rg/providers/Microsoft.Authorization/roleAssignments/xxxx",
+  "name": "xxxx",
+  "principalId": "xxxx",
+  "principalType": "User",
+  "resourceGroup": "practice5task5-rg",
+  "roleDefinitionId": "/subscriptions/xxxxx/providers/Microsoft.Authorization/roleDefinitions/xxxx",
+  "scope": "/subscriptions/xxxxx/resourceGroups/practice5task5-rg",
+  "type": "Microsoft.Authorization/roleAssignments",
+  "updatedBy": "xxxxx",
+  "updatedOn": "2025-02-08T15:30:17.458074+00:00"
+}
+```
+```bash
+$ $User = Get-AzADUser -UserPrincipalName "xxxxx@dmytroslotvinskyygmail.onmicrosoft.com"
+$ New-AzRoleAssignment -ObjectId $User.Id -RoleDefinitionName "Contributor" -Scope "/subscriptions/xxxxx/resourceGroups/practice5task5-rg/providers/Microsoft.Storage/storageAccounts/practice5task5storageacc"
+```
 
+**Reviewing IAM section at the newly created Azure Storage Account and assignment added (Contributor built-in role)**
+![Screenshot](screenshots_task5/storage-iam.png)
 
+**Listing assignments using az cli and Azure PowerShell**
+```bash
+$ az role assignment list --assignee xxxxxx@dmytroslotvinskyygmail.onmicrosoft.com --output table
+$ Get-AzRoleAssignment -SignInName "xxxxx@dmytroslotvinskyygmail.onmicrosoft.com"
+```
 
+**Clean Up: deleting previously created assignments**
+```bash
+az role assignment delete --assignee xxxxx@dmytroslotvinskyygmail.onmicrosoft.com --role "Reader" --resource-group practice5task5-rg
+
+$ User = Get-AzADUser -UserPrincipalName "xxxxx@dmytroslotvinskyygmail.onmicrosoft.com"
+$ Remove-AzRoleAssignment -ObjectId $User.Id -RoleDefinitionName "Contributor" -Scope "/subscriptions/xxxx-x-x-x-xxxxx/resourceGroups/practice5task5-rg/providers/Microsoft.Storage/storageAccounts/practice5task5storageacc"
+#Ouput: 
+Succesfully removed role assignment for AD object 'xxxx-x-x-x-xxxx' on scope '/subscriptions/xxxxx-x-x-x-xxxx/resourceGroups/practice5task5-rg/providers/Microsoft.Storage/storageAccounts/practice5task5storageacc' with role definition 'Contributor'
+```
+
+## Task 6
