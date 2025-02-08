@@ -152,8 +152,142 @@ $ Stop-AzVm -ResourceGroupName practice5task3_pshrg -Name MyVM2 -Force
 $ az vm delete --resource-group practice5task3_azrg --name MyVM1 --yes
 $ Remove-AzVm -ResourceGroupName practice5task3_pshrg -Name MyVM2 -Force
 ```
+## Task 4
+**Creating Azure Storage Accounts with Azure CLI and Azure PowerShell**
+```bash
+$ az storage account create --name practice5task4 --resource-group Markiianxxxxx --location eastus --sku Standard_LRS
+The public access to all blobs or containers in the storage account will be disallowed by default in the future, which means default value for --allow-blob-public-access is still null but will be equivalent to false.
+{
+  "accessTier": "Hot",
+  "accountMigrationInProgress": null,
+  "allowBlobPublicAccess": false,
+  "allowCrossTenantReplication": false,
+  "allowSharedKeyAccess": null,
+  "allowedCopyScope": null,
+  "azureFilesIdentityBasedAuthentication": null,
+  "blobRestoreStatus": null,
+  "creationTime": "2025-02-08T14:14:53.268578+00:00",
+  "customDomain": null,
+  "defaultToOAuthAuthentication": null,
+  "dnsEndpointType": null,
+  "enableHttpsTrafficOnly": true,
+  "enableNfsV3": null,
+  "encryption": {
+    "encryptionIdentity": null,
+    "keySource": "Microsoft.Storage",
+    "keyVaultProperties": null,
+    "requireInfrastructureEncryption": null,
+    "services": {
+      "blob": {
+        "enabled": true,
+        "keyType": "Account",
+        "lastEnabledTime": "2025-02-08T14:14:53.409194+00:00"
+      },
+      "file": {
+        "enabled": true,
+        "keyType": "Account",
+        "lastEnabledTime": "2025-02-08T14:14:53.409194+00:00"
+      },
+      "queue": null,
+      "table": null
+    }
+  },
+  "extendedLocation": null,
+  "failoverInProgress": null,
+  "geoReplicationStats": null,
+  "id": "/subscriptions/x-x-x-x-x/resourceGroups/Markiianxxxx/providers/Microsoft.Storage/storageAccounts/practice5task4",
+  "identity": null,
+  "immutableStorageWithVersioning": null,
+  "isHnsEnabled": null,
+  "isLocalUserEnabled": null,
+  "isSftpEnabled": null,
+  "isSkuConversionBlocked": null,
+  "keyCreationTime": {
+    "key1": "2025-02-08T14:14:53.409194+00:00",
+    "key2": "2025-02-08T14:14:53.409194+00:00"
+  },
+  "keyPolicy": null,
+  "kind": "StorageV2",
+  "largeFileSharesState": null,
+  "lastGeoFailoverTime": null,
+  "location": "eastus",
+  "minimumTlsVersion": "TLS1_0",
+  "name": "practice5task4",
+  "networkRuleSet": {
+    "bypass": "AzureServices",
+    "defaultAction": "Allow",
+    "ipRules": [],
+    "ipv6Rules": [],
+    "resourceAccessRules": null,
+    "virtualNetworkRules": []
+  },
+  "primaryEndpoints": {
+    "blob": "https://practice5task4.blob.core.windows.net/",
+    "dfs": "https://practice5task4.dfs.core.windows.net/",
+    "file": "https://practice5task4.file.core.windows.net/",
+    "internetEndpoints": null,
+    "microsoftEndpoints": null,
+    "queue": "https://practice5task4.queue.core.windows.net/",
+    "table": "https://practice5task4.table.core.windows.net/",
+    "web": "https://practice5task4.z13.web.core.windows.net/"
+  },
+  "primaryLocation": "eastus",
+  "privateEndpointConnections": [],
+  "provisioningState": "Succeeded",
+  "publicNetworkAccess": null,
+  "resourceGroup": "Markiianxxxxx",
+  "routingPreference": null,
+  "sasPolicy": null,
+  "secondaryEndpoints": null,
+  "secondaryLocation": null,
+  "sku": {
+    "name": "Standard_LRS",
+    "tier": "Standard"
+  },
+  "statusOfPrimary": "available",
+  "statusOfSecondary": null,
+  "storageAccountSkuConversionStatus": null,
+  "tags": {},
+  "type": "Microsoft.Storage/storageAccounts"
+}
+```
+```bash
+$ New-AzStorageAccount -ResourceGroupName "Markiianxxxxx" -Name "practice5task4psh" -Location "eastus" -SkuName "Standard_LRS" 
+WARNING: Upcoming breaking changes in the cmdlet 'New-AzStorageAccount' :
+Default value of AllowBlobPublicAccess will be changed from True to False in a future release. When AllowBlobPublicAccess is False on a storage account, it is not permitted to configure container ACLs to allow anonymous access to blobs within the storage account.
+Cmdlet invocation changes :
+    Old Way : AllowBlobPublicAccess is set to True by defult.
+    New Way : AllowBlobPublicAccess is set to False by default.
+Note : Go to https://aka.ms/azps-changewarnings for steps to suppress this breaking change warning, and other information on breaking changes in Azure PowerShell.
 
+StorageAccountName ResourceGroupName PrimaryLocation SkuName      Kind      AccessTier CreationTime        ProvisioningState Enable
+                                                                                                                             HttpsT
+                                                                                                                             raffic
+                                                                                                                             Only
+------------------ ----------------- --------------- -------      ----      ---------- ------------        ----------------- ------
+practice5task4psh  Markiianxxxxx eastus          Standard_LRS StorageV2 Hot        2/8/2025 2:16:05 PM Succeeded         True  
+```
 
+**Listing available Storage Accounts in the subscription**
+![Screenshot](screenshots_task4/storageaccounts.png)
+
+**Retrieving connection strings from the CLI**
+```bash
+$ az storage account show-connection-string --name practice5task4 --resource-group Markiianxxxxx
+{
+  "connectionString": "DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net;AccountName=practice5task4;AccountKey=+youareanoobT2qN0VQstno0mtoFS+ZxDBKrvzTKj+xxxxx==;BlobEndpoint=https://practice5task4.blob.core.windows.net/;FileEndpoint=https://practice5task4.file.core.windows.net/;QueueEndpoint=https://practice5task4.queue.core.windows.net/;TableEndpoint=https://practice5task4.table.core.windows.net/"
+}
+
+$  (Get-AzStorageAccountKey -ResourceGroupName "Markiianxxxx" -Name "practice5task4psh")[0].Value
+# output: NW0QwWkjyouareanoobthereisnotkeyisZBFe/x+AStUXyrbA==
+```
+**Deleting Azure Storage Accounts from the CLI**
+```bash
+$ az storage account delete --name practice5task4 --resource-group Markiianxxxxx --yes
+$ Remove-AzStorageAccount -ResourceGroupName "Markiianxxxxx" -Name "practice5task4psh" -Force
+```
+
+## Task 5
 
 
 
