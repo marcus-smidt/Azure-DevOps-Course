@@ -336,3 +336,60 @@ Succesfully removed role assignment for AD object 'xxxx-x-x-x-xxxx' on scope '/s
 ```
 
 ## Task 6
+**Azure Resource Group created using Azure CLI on local Ubuntu machine**
+```bash
+$ az group create --name WebServerGroupTask6 --location eastus
+```
+
+**Deploying a Virtual Network and Subnet**
+```bash
+$ az network vnet create --resource-group WebServerGroupTask6 --name WebVNet --address-prefix 10.0.0.0/16 --subnet-name WebSubnet --subnet-prefix 10.0.0.0/24
+```
+
+**Creating Storage Account for Logs**
+```bash
+$ New-AzStorageAccount -ResourceGroupName WebServerGroupTask6 -Name webserverlogsatask6 -Location eastus -SkuName Standard_LRS -Kind StorageV2
+```
+
+**Enabling Blob Storage and creating a container**
+```bash
+$storageAccount = Get-AzStorageAccount -ResourceGroupName WebServerGroupTask6 -Name webserverlogsatask6
+$ctx = $storageAccount.Context
+New-AzStorageContainer -Name logs -Context $ctx -Permission Blob
+```
+
+**Azure VM deployment**
+```bash
+$ az vm create --resource-group WebServerGroupTask6 --name WebVMtask6 --image Ubuntu2204 --admin-username azureuser --admin-username "xxxxx" --size Standard_B1s --vnet-name WebVNet --subnet WebSubnet --public-ip-address WebVM-IP
+```
+```bash
+$ az vm open-port --port 80 --resource-group WebServerGroupTask6 --name WebVMtask6
+```
+
+**Installing python2 as a prerequisite for Linux Diagnostics later on**
+![Screenshot](screenshots_task6/python2-installed.png)
+
+**Nginx configuration**
+```bash
+az vm run-command invoke --command-id RunShellScript --resource-group WebServerGroupTask6 --name WebVMtask6 --scripts "sudo apt update && sudo apt install -y nginx && sudo systemctl start nginx && sudo systemctl enable nginx"
+```
+![Screenshot](screenshots_task6/shell-script.png)
+
+![Screenshot](screenshots_task6/nginx-default-page.png)
+
+**Azure Linux diagnostics enabled**
+```bash
+$storageAccount = Get-AzStorageAccount -ResourceGroupName WebServerGroupTask6 -Name webserverlogsatask6
+$storageKey = (Get-AzStorageAccountKey -ResourceGroupName WebServerGroupTask6 -Name $storageAccount.StorageAccountName)[0].Value
+
+$ az vm diagnostics set \
+  --resource-group WebServerGroupTask6 \
+  --vm-name WebVMtask6 \
+  --settings '{"ladCfg": {"diagnosticMonitorConfiguration": {"performanceCounters": {"performanceCounterConfiguration": [{"counterSpecifier": "/proc/stat", "sampleRateInSeconds": 10}, {"counterSpecifier": "/proc/meminfo", "sampleRateInSeconds": 10}, {"counterSpecifier": "/proc/diskstats", "sampleRateInSeconds": 10}]}}}}' \
+  --protected-settings "{\"storageAccount\": \"$storageAccount.StorageAccountName\", \"storageAccountKey\": \"$storageKey\"}"
+```
+
+**Cleaning resources up**
+```bash
+$ az group delete --name WebServerGroupTask6 --yes --no-wait
+```
