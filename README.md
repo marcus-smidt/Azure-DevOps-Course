@@ -509,3 +509,87 @@ Command group 'automation job' is experimental and under development. Reference 
 ```
 
 ## Task 8
+**Note: Automation account from the previous task was used**
+**Also runbook was created manually in the Azure Portal due to the issue mentioned in task #7**
+**PowerShell script for checking the resouces not accesses for last 30 days**
+```bash
+param (
+    [string] $SubscriptionId
+)
+
+# Connect to Azure
+Write-Output "Connecting to Azure..."
+Connect-AzAccount -Identity
+
+# Set Subscription
+Write-Output "Setting subscription to $SubscriptionId..."
+Set-AzContext -SubscriptionId $SubscriptionId
+
+# Get current date and 30 days ago date
+$cutoffDate = (Get-Date).AddDays(-30)
+
+# Fetch all resource groups
+$resourceGroups = Get-AzResourceGroup
+
+# Filter unused resource groups based on last modified date
+$unusedGroups = @()
+foreach ($rg in $resourceGroups) {
+    $resources = Get-AzResource -ResourceGroupName $rg.ResourceGroupName
+    if ($resources.Count -eq 0) {
+        $unusedGroups += $rg.ResourceGroupName
+    }
+}
+
+if ($unusedGroups.Count -eq 0) {
+    Write-Output "No unused resource groups found."
+    exit 0
+}
+Write-Output "The following resource groups have not been used in the past 30 days:"
+$unusedGroups | ForEach-Object { Write-Output $_ }
+
+# Prompt for deletion confirmation
+$confirmation = Read-Host "Do you want to delete these resource groups? (yes/no)"
+if ($confirmation -eq "yes") {
+    foreach ($rg in $unusedGroups) {
+        Write-Output "Deleting resource group: $rg"
+        Remove-AzResourceGroup -Name $rg -Force
+    }
+    Write-Output "Resource groups deleted successfully."
+} else {
+    Write-Output "Operation canceled."
+}
+```
+
+**Adding a System-assigned Managed Identity for Job execution during the later stages**
+![Screenshot](screenshots_task8/identity.png)
+
+**Creating a WebHook for Job trigger from the local Ubuntu CLI**
+![Screenshot](screenshots_task8/webhook-added.png)
+
+**Testing the WebHook configured before**
+```bash
+#az cli
+$ curl -X POST -H "Content-Type: application/json" -d '{}' "https://x-x-x-x-x.webhook.eus.azure-automation.net/webhooks?token=xxxxx%3d"
+
+#powershell
+$uri = "xxxxx"
+$body = @{}
+Invoke-RestMethod -Uri $uri -Method Post -Body ($body | ConvertTo-Json) -ContentType "application/json"
+```
+![Screenshot](screenshots_task8/webhook-in-action.png)
+
+**Checking Job status and logs output from the Azure Portal**
+![Screenshot](screenshots_task8/jobs-done.png)
+
+![Screenshot](screenshots_task8/logs.png)
+
+## Task 9
+
+
+
+
+
+
+
+
+
