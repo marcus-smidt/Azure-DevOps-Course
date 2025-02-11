@@ -584,6 +584,65 @@ Invoke-RestMethod -Uri $uri -Method Post -Body ($body | ConvertTo-Json) -Content
 ![Screenshot](screenshots_task8/logs.png)
 
 ## Task 9
+**Desired State Configuration PowerShell script**
+```bash
+configuration MyDSCConfig {
+    param (
+        [string]$NodeName = 'localhost'
+    )
+
+    Node $NodeName {
+        # Ensure IIS Web-Server feature is installed
+        WindowsFeature WebServer {
+            Name   = "Web-Server"
+            Ensure = "Present"
+        }
+
+        # Ensure the config.xml file exists with predefined content
+        File ConfigFile {
+            DestinationPath = "C:\inetpub\wwwroot\config.xml"
+            Contents        = "<configuration><setting name='example' value='true'/></configuration>"
+            Ensure          = "Present"
+            Type            = "File"
+            Force           = $true
+        }
+
+        # Ensure the IIS (w3svc) service is running
+        Service IISService {
+            Name        = "w3svc"
+            State       = "Running"
+            StartUpType = "Automatic"
+            Ensure      = "Present"
+        }
+    }
+}
+```
+
+**Assigning the configuration to the testing VM created before**
+![Screenshot](screenshots_task9/compiled-config.png)
+
+![Screenshot](screenshots_task9/compiled-config2.png)
+
+![Screenshot](screenshots_task9/config-assigned.png)
+
+![Screenshot](screenshots_task9/vm-connected.png)
+
+**Turning off service and deleting the config file from wwwroot directory**
+![Screenshot](screenshots_task9/script1.png)
+
+![Screenshot](screenshots_task9/script2.png)
+
+**Checking evaluation stages from the Azure Portal Configuration Status page**
+![Screenshot](screenshots_task9/vm-compliant.png)
+![Screenshot](screenshots_task9/vm-non-compliant.png)
+
+
+
+
+
+
+
+
 
 
 
