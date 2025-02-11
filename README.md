@@ -393,3 +393,119 @@ $ az vm diagnostics set \
 ```bash
 $ az group delete --name WebServerGroupTask6 --yes --no-wait
 ```
+
+## Task 7
+**Creating Azure Automation Account using Azure CLI**
+```bash
+$ az automation account create --name MyAutomationAccountTask77 --resource-group Markiianxxxxx --location eastus
+```
+
+**Creating automation runbook from the CLI**
+```bash
+az automation runbook create --automation-account-name MyAutomationAccountTask77 --name testrunbook123task7 --resource-group Markiianxxxxx --type PowerShell
+```
+
+```bash
+NOTE! Runbook creation bug is currently in process of resolving by MS Azure team
+Reference: https://learn.microsoft.com/en-us/answers/questions/1514806/azure-cloud-creating-automation-account-bad-reques
+```
+
+![Screenshot](screenshots_task7/runbook-created.png)
+
+**PowerShell script used for a runbook**
+```bash
+param (
+    [string]$ResourceGroupName,
+    [string]$VMName
+)
+
+# Authenticate with Managed Identity (if available) or use Azure Automation credentials
+$connection = Get-AutomationConnection -Name "AzureRunAsConnection"
+Connect-AzAccount -ServicePrincipal -TenantId $connection.TenantId -ApplicationId $connection.ApplicationId -CertificateThumbprint $connection.CertificateThumbprint
+
+# Start the Azure VM
+Start-AzVM -ResourceGroupName $ResourceGroupName -Name $VMName -NoWait
+Write-Output "VM $VMName in Resource Group $ResourceGroupName is starting."
+```
+**Runbook schedule applied**
+```bash
+$ az automation schedule create --automation-account-name MyAutomationAccountTask77 --resource-group xxxxx --name DailyStartSchedule --start-time "2025
+-02-11T06:00:00Z" --description "Daily VM Start" --frequency Day --interval 1
+{
+  "advancedSchedule": null,
+  "creationTime": "2025-02-10T18:40:43.296666+00:00",
+  "description": "Daily VM Start",
+  "expiryTime": "9999-12-31T23:59:00+00:00",
+  "expiryTimeOffsetMinutes": 0.0,
+  "frequency": "Day",
+  "id": "/subscriptions/xxxxx/resourceGroups/xxxxx/providers/Microsoft.Automation/automationAccounts/MyAutomationAccountTask77/schedules/DailyStartSchedule",
+  "interval": 1,
+  "isEnabled": true,
+  "lastModifiedTime": "2025-02-10T18:40:43.296666+00:00",
+  "name": "DailyStartSchedule",
+  "nextRun": "2025-02-11T06:00:00+00:00",
+  "nextRunOffsetMinutes": 0.0,
+  "resourceGroup": "Markiianxxxxx",
+  "startTime": "2025-02-11T06:00:00+00:00",
+  "startTimeOffsetMinutes": 0.0,
+  "timeZone": "Etc/UTC",
+  "type": "Microsoft.Automation/AutomationAccounts/Schedules"
+}
+```
+**Runbook published/started from the CLI**
+```bash
+$ az automation runbook start --automation-account-name MyAutomationAccountTask77 --name testrunbook123task7 --resource-group xxxxx --parameters ResourceGroupName="VMResourceGroup" VMName="MyVM1"
+Command group 'automation runbook' is experimental and under development. Reference and support levels: https://aka.ms/CLI_refstatus
+{
+  "creationTime": "2025-02-10T18:38:56.366666+00:00",
+  "endTime": null,
+  "exception": null,
+  "id": "/subscriptions/xxxxx/resourceGroups/xxxxx/providers/Microsoft.Automation/automationAccounts/MyAutomationAccountTask77/jobs/d944c104-92a9-46ba-93c4-a7cd966a26e7",
+  "jobId": "7dc0ceac-3b88-4db5-ad1b-a4baf97bad3b",
+  "lastModifiedTime": "2025-02-10T18:38:56.366666+00:00",
+  "lastStatusModifiedTime": "2025-02-10T18:38:56.366666+00:00",
+  "name": "d944c104-92a9-46ba-93c4-a7cd966a26e7",
+  "parameters": {
+    "ResourceGroupName": "VMResourceGroup",
+    "VMName": "MyVM1"
+  },
+  "provisioningState": "Processing",
+  "resourceGroup": "xxxxx",
+  "runOn": null,
+  "runbook": {
+    "name": "testrunbook123task7"
+  },
+  "startTime": null,
+  "startedBy": null,
+  "status": "New",
+  "statusDetails": "None",
+  "type": "Microsoft.Automation/AutomationAccounts/Jobs"
+}
+```
+
+**Listing jobs**
+```bash
+$ az automation job list --automation-account-name "MyAutomationAccountTask77" --resource-group "xxxxx"
+Command group 'automation job' is experimental and under development. Reference and support levels: https://aka.ms/CLI_refstatus
+[
+  {
+    "creationTime": "2025-02-10T18:38:56.375939+00:00",
+    "endTime": "2025-02-10T18:40:01.335658+00:00",
+    "id": "/subscriptions/xxxxxx/resourceGroups/xxxxx/providers/Microsoft.Automation/automationAccounts/MyAutomationAccountTask77/jobs/x-x-x-x-x",
+    "jobId": "7dc0ceac-3b88-4db5-ad1b-a4baf97bad3b",
+    "lastModifiedTime": "2025-02-10T18:40:01.335658+00:00",
+    "name": "d944c104-92a9-46ba-93c4-a7cd966a26e7",
+    "provisioningState": "Succeeded",
+    "resourceGroup": "xxxxx",
+    "runOn": null,
+    "runbook": {
+      "name": "testrunbook123task7"
+    },
+    "startTime": "2025-02-10T18:39:46.901627+00:00",
+    "status": "Completed",
+    "type": "Microsoft.Automation/AutomationAccounts/Jobs"
+  }
+]
+```
+
+## Task 8
