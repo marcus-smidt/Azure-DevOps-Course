@@ -636,6 +636,99 @@ configuration MyDSCConfig {
 ![Screenshot](screenshots_task9/vm-compliant.png)
 ![Screenshot](screenshots_task9/vm-non-compliant.png)
 
+## Task 10
+**PowerShell script provisioned to Automation Account Runbook**
+```bash
+param (
+    [string]$ResourceGroupName = "Markiianxxxxx",
+    [string]$Location = "East US",
+    [string]$VmName = "WebServerVxxxxx",
+    [string]$VmSize = "Standard_B2s",
+    [string]$AdminUsername = "azureuser",
+    [string]$AdminPassword = "xxxxxx"
+)
+
+# Ensure Automation Account is authenticated
+Write-Output "Connecting to Azure..."
+try {
+    Connect-AzAccount -Identity
+} catch {
+    Write-Error "Azure authentication failed. Ensure the Automation Account has managed identity enabled."
+    exit
+}
+
+# Create Resource Group if not exists
+if (-not (Get-AzResourceGroup -Name $ResourceGroupName -ErrorAction SilentlyContinue)) {
+    Write-Output "Creating Resource Group: $ResourceGroupName..."
+    New-AzResourceGroup -Name $ResourceGroupName -Location $Location
+}
+
+# Create Virtual Network and Subnet
+Write-Output "Creating Virtual Network and Subnet..."
+$vnet = New-AzVirtualNetwork -ResourceGroupName $ResourceGroupName -Location $Location -Name "MyVNet" -AddressPrefix "10.0.0.0/16"
+$subnet = New-AzVirtualNetworkSubnetConfig -Name "MySubnet" -AddressPrefix "10.0.0.0/24"
+$vnet | Set-AzVirtualNetwork -Subnet $subnet
+
+# Create Public IP
+Write-Output "Creating Public IP..."
+$publicIp = New-AzPublicIpAddress -ResourceGroupName $ResourceGroupName -Location $Location -Name "WebServerPublicIP" -AllocationMethod Static
+
+# Create Network Security Group and Allow Web Traffic
+Write-Output "Configuring NSG..."
+$nsg = New-AzNetworkSecurityGroup -ResourceGroupName $ResourceGroupName -Location $Location -Name "WebServerNSG"
+$nsg | New-AzNetworkSecurityRuleConfig -Name "AllowWeb" -Priority 100 -Direction Inbound -Access Allow -Protocol Tcp -SourcePortRange * -DestinationPortRange 80 -SourceAddressPrefix * -DestinationAddressPrefix * | Set-AzNetworkSecurityGroup
+
+# Create Network Interface
+Write-Output "Creating Network Interface..."
+$nic = New-AzNetworkInterface -ResourceGroupName $ResourceGroupName -Location $Location -Name "WebServerNIC" -SubnetId $subnet.Id -PublicIpAddressId $publicIp.Id -NetworkSecurityGroupId $nsg.Id
+
+# Define VM credentials
+$cred = New-Object -TypeName PSCredential -ArgumentList $AdminUsername, (ConvertTo-SecureString -String $AdminPassword -AsPlainText -Force)
+
+# Create VM Configuration (Ubuntu)
+Write-Output "Creating Ubuntu Virtual Machine..."
+$vmConfig = New-AzVMConfig -VMName $VmName -VMSize $VmSize | `
+    Set-AzVMOperatingSystem -Linux -ComputerName $VmName -Credential $cred | `
+    Set-AzVMSourceImage -PublisherName "Canonical" -Offer "0001-com-ubuntu-server-jammy" -Skus "22_04-lts" -Version "latest" | `
+    Add-AzVMNetworkInterface -Id $nic.Id
+
+New-AzVM -ResourceGroupName $ResourceGroupName -Location $Location -VM $vmConfig
+Write-Output "Ubuntu VM deployed successfully."
+
+# Attach Managed Disk
+Write-Output "Attaching Managed Disk..."
+$diskConfig = New-AzDiskConfig -Location $Location -DiskSizeGB 10 -SkuName Standard_LRS -CreateOption Empty
+$disk = New-AzDisk -ResourceGroupName $ResourceGroupName -DiskName "WebServerDataDisk" -Disk $diskConfig
+$vm = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $VmName
+$vm | Add-AzVMDataDisk -Name "WebServerDataDisk" -ManagedDiskId $disk.Id -Lun 0 -CreateOption Attach
+Update-AzVM -ResourceGroupName $ResourceGroupName -VM $vm
+Write-Output "Managed Disk attached successfully."
+
+# Install Nginx and Configure Web Server
+Write-Output "Installing Nginx and setting up the web server..."
+$script = @"
+#!/bin/bash
+sudo apt update -y
+sudo apt install nginx -y
+echo 'Welcome to my Nginx web server!' | sudo tee /var/www/html/index.html
+sudo systemctl restart nginx
+"@
+
+# Run Command on the VM to Install Nginx
+Invoke-AzVMRunCommand -ResourceGroupName $ResourceGroupName -VMName $VmName -CommandId "RunShellScript" -ScriptString $script
+Write-Output "Nginx installed and configured successfully."
+
+# Get Public IP and Verify Deployment
+Write-Output "Fetching Public IP..."
+$publicIpAddress = (Get-AzPublicIpAddress -ResourceGroupName $ResourceGroupName -Name "WebServerPublicIP").IpAddress
+
+Write-Output "Deployment Completed. Access the website at http://$publicIpAddress"
+```
+**After Runbook publish and sample run**
+![Screenshot](screenshots_task10/job-run.png)
+![Screenshot](screenshots_task10/vm-running.png)
+![Screenshot](screenshots_task10/vm-info.png)
+
 
 
 
