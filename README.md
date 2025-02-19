@@ -470,8 +470,127 @@ $ az deployment sub create \
 ![Screenshot](screenshots_task7/rg-created-tags.png)
 
 ## Task 8
+**ARM template file for Storage Account deployment**
+```bash
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the Storage Account"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for the Storage Account"
+            }
+        },
+        "softDeleteRetentionDays": {
+            "type": "int",
+            "defaultValue": 7,
+            "minValue": 1,
+            "maxValue": 365,
+            "metadata": {
+                "description": "Number of days to retain deleted blobs"
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-09-01",
+            "name": "[parameters('storageAccountName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": false,
+                "publicNetworkAccess": "Enabled",
+                "networkAcls": {
+                    "defaultAction": "Deny",
+                    "bypass": "AzureServices"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "blob": {
+                            "enabled": true,
+                            "keyType": "Account"
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "deletionPolicy": {
+                    "enabled": true
+                },
+                "blobServiceProperties": {
+                    "deleteRetentionPolicy": {
+                        "enabled": true,
+                        "days": "[parameters('softDeleteRetentionDays')]"
+                    }
+                }
+            },
+            "tags": {
+                "environment": "production",
+                "purpose": "secure-storage"
+            }
+        }
+    ],
+    "outputs": {
+        "storageAccountName": {
+            "type": "string",
+            "value": "[parameters('storageAccountName')]"
+        }
+    }
+}
+```
 
+**ARM template file deployment from Azure CLI**
+```bash
+$ STORAGE_ACCOUNT_NAME=mystorage$RANDOM
+$ az deployment group create \                         
+  --resource-group Markiianxxxxx \         
+  --template-file storage-template123987.json \
+  --parameters storageAccountName=$STORAGE_ACCOUNT_NAME
 
+$ az storage account show --resource-group Markiianxxxxx --name $STORAGE_ACCOUNT_NAME
+{
+  "accessTier": "Hot",
+  "accountMigrationInProgress": null,
+  "allowBlobPublicAccess": false,
+  "allowCrossTenantReplication": false,
+  "allowSharedKeyAccess": null,
+  "allowedCopyScope": null,
+  "azureFilesIdentityBasedAuthentication": null,
+  "blobRestoreStatus": null,
+```
+
+**Retention period modification from Azure CLI**
+```bash
+az deployment group create \
+  --resource-group Markiianxxxxx \
+  --template-file storage-template123987.json \
+  --parameters storageAccountName=$STORAGE_ACCOUNT_NAME softDeleteRetentionDays=14
+```
+
+**Reviewing created Storage Account from CLI and Azure Portal**
+![Screenshot](screenshots_task8/storage-account-list.png)
+![Screenshot](screenshots_task8/portal-review.png)
+
+**Clean up**
+```bash
+az storage account delete \
+  --resource-group Markiianxxxxx \
+  --name $STORAGE_ACCOUNT_NAME \
+  --yes
+```
 
 
 
