@@ -949,6 +949,259 @@ $ az storage account delete \
   --yes
 ```
 ## Task 11 (2)
+**Describing Bicep files used for task**
+```bash 
+#main.bicep
+// main.bicep
+
+// Parameters
+param location string = resourceGroup().location
+param vmName string = 'linuxVM'
+param adminUsername string = 'azureuser'
+param vnetName string = 'mainVNet'
+param storageAccountName string = 'vmdiag${uniqueString(resourceGroup().id)}'
+
+@secure()
+param adminPublicKey string
+
+// Variables
+var networkingModuleName = 'networking'
+var vmModuleName = 'virtualmachine'
+
+// Storage Account
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
+  name: storageAccountName
+  location: location
+  sku: {
+    name: 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+  properties: {
+    accessTier: 'Hot'
+    supportsHttpsTrafficOnly: true
+  }
+}
+
+// Networking Module
+module networking './modules/networking.bicep' = {
+  name: networkingModuleName
+  params: {
+    location: location
+    vnetName: vnetName
+  }
+}
+
+// Virtual Machine Module
+module virtualmachine './modules/virtualmachine.bicep' = {
+  name: vmModuleName
+  params: {
+    location: location
+    vmName: vmName
+    adminUsername: adminUsername
+    adminPublicKey: adminPublicKey
+    subnetId: networking.outputs.subnetId
+    diagStorageAccountName: storageAccount.name
+  }
+}
+
+// Outputs
+output vmPublicIP string = virtualmachine.outputs.publicIPAddress
+output vnetName string = networking.outputs.vnetName
+```
+```bash
+#modules/networking.bicep
+// modules/networking.bicep
+
+param location string
+param vnetName string
+
+// Variables
+var addressPrefix = '10.0.0.0/16'
+var subnetName = 'default'
+var subnetPrefix = '10.0.0.0/24'
+var nsgName = '${vnetName}-nsg'
+
+// Network Security Group
+resource nsg 'Microsoft.Network/networkSecurityGroups@2021-05-01' = {
+  name: nsgName
+  location: location
+  properties: {
+    securityRules: [
+      {
+        name: 'AllowSSH'
+        properties: {
+          priority: 1000
+          access: 'Allow'
+          direction: 'Inbound'
+          destinationPortRange: '22'
+          protocol: 'Tcp'
+          sourceAddressPrefix: '*'
+          sourcePortRange: '*'
+          destinationAddressPrefix: '*'
+        }
+      }
+    ]
+  }
+}
+
+// Virtual Network
+resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
+  name: vnetName
+  location: location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        addressPrefix
+      ]
+    }
+    subnets: [
+      {
+        name: subnetName
+        properties: {
+          addressPrefix: subnetPrefix
+          networkSecurityGroup: {
+            id: nsg.id
+          }
+        }
+      }
+    ]
+  }
+}
+
+// Outputs
+output vnetName string = vnet.name
+output subnetId string = vnet.properties.subnets[0].id
+```
+```bash
+#virtualmachine.bicep
+// modules/virtualmachine.bicep
+
+param location string
+param vmName string
+param adminUsername string
+param subnetId string
+param diagStorageAccountName string
+
+@secure()
+param adminPublicKey string
+
+// Variables
+var publicIPName = '${vmName}-ip'
+var nicName = '${vmName}-nic'
+var osDiskName = '${vmName}-osdisk'
+
+// Public IP
+resource publicIP 'Microsoft.Network/publicIPAddresses@2021-05-01' = {
+  name: publicIPName
+  location: location
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    publicIPAllocationMethod: 'Static'
+  }
+}
+
+// Network Interface
+resource nic 'Microsoft.Network/networkInterfaces@2021-05-01' = {
+  name: nicName
+  location: location
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          subnet: {
+            id: subnetId
+          }
+          publicIPAddress: {
+            id: publicIP.id
+          }
+        }
+      }
+    ]
+  }
+}
+
+// Virtual Machine
+resource vm 'Microsoft.Compute/virtualMachines@2021-11-01' = {
+  name: vmName
+  location: location
+  properties: {
+    hardwareProfile: {
+      vmSize: 'Standard_B2s'  // Can be modified for different sizes
+    }
+    osProfile: {
+      computerName: vmName
+      adminUsername: adminUsername
+      linuxConfiguration: {
+        disablePasswordAuthentication: true
+        ssh: {
+          publicKeys: [
+            {
+              path: '/home/${adminUsername}/.ssh/authorized_keys'
+              keyData: adminPublicKey
+            }
+          ]
+        }
+      }
+    }
+    storageProfile: {
+      imageReference: {
+        publisher: 'Canonical'
+        offer: 'UbuntuServer'
+        sku: '18.04-LTS'
+        version: 'latest'
+      }
+      osDisk: {
+        name: osDiskName
+        createOption: 'FromImage'
+        managedDisk: {
+          storageAccountType: 'StandardSSD_LRS'
+        }
+      }
+    }
+    networkProfile: {
+      networkInterfaces: [
+        {
+          id: nic.id
+        }
+      ]
+    }
+    diagnosticsProfile: {
+      bootDiagnostics: {
+        enabled: true
+        storageUri: 'https://${diagStorageAccountName}.blob.core.windows.net'
+      }
+    }
+  }
+}
+
+// Outputs
+output publicIPAddress string = publicIP.properties.ipAddress
+```
+
+**Commands used for deployment**
+```bash
+$ az group create --name myResourceGroup --location eastus
+$ az deployment group create \
+  --resource-group myResourceGroup \
+  --template-file main.bicep \
+  --parameters adminPublicKey="xxxxx"
+```
+
+**Services deployment and validation via SSH connection and Portal overview**
+![Screenshot](screenshots_task11/resource-group-and-services.png)
+![Screenshot](screenshots_task11/portal-view.png)
+
+**Clean up**
+```bash
+$ az group delete --name myResourceGroup --yes
+```
+
+## Task 12 (skipped as optional)
+## Task 13 
 
 
 
