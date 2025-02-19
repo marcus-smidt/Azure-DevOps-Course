@@ -853,6 +853,103 @@ az deployment group create \
 ![Screenshot](screenshots_task10/portal-view.png)
 
 ## Task 11
+**ARM Template from task 8 was converted into .bicep file**
+```bash
+$ az bicep decompile --file storage-template123987.json
+
+#decompiled file content
+@description('Name of the Storage Account')
+param storageAccountName string
+
+@description('Location for the Storage Account')
+param location string = resourceGroup().location
+
+@description('Number of days to retain deleted blobs')
+@minValue(1)
+@maxValue(365)
+param softDeleteRetentionDays int = 7
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
+  name: storageAccountName
+  location: location
+  sku: {
+    name: 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+  properties: {
+    minimumTlsVersion: 'TLS1_2'
+    allowBlobPublicAccess: false
+    publicNetworkAccess: 'Enabled'
+    networkAcls: {
+      defaultAction: 'Deny'
+      bypass: 'AzureServices'
+    }
+    supportsHttpsTrafficOnly: true
+    encryption: {
+      services: {
+        blob: {
+          enabled: true
+          keyType: 'Account'
+        }
+      }
+      keySource: 'Microsoft.Storage'
+    }
+    deletionPolicy: {
+      enabled: true
+    }
+    blobServiceProperties: {
+      deleteRetentionPolicy: {
+        enabled: true
+        days: softDeleteRetentionDays
+      }
+    }
+  }
+  tags: {
+    environment: 'production'
+    purpose: 'secure-storage'
+  }
+}
+
+output storageAccountName string = storageAccountName
+```
+
+
+**Creating parameters.json file**
+```bash
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountName": {
+            "value": "mystd3lkbjij43985"
+        },
+        "location": {
+            "value": "eastus"
+        },
+        "softDeleteRetentionDays": {
+            "value": 7
+        }
+    }
+}
+```
+**Applying Bicep deployment**
+```bash
+$ az deployment group create   --resource-group Markiianxxxxx   --template-file storage-template123987.bicep   --parameters @parameters.json
+```
+
+**Checking Azure Portal for newly created Storage Account**
+![Screenshot](screenshots_task11/portal-view.png)
+
+**Clean up**
+```bash
+# Delete the storage account
+$ az storage account delete \
+  --name mystd3lkbjij43985 \
+  --resource-group Markiianxxxxx \
+  --yes
+```
+## Task 11 (2)
+
 
 
 
