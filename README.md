@@ -401,6 +401,77 @@ module "compute" {
 
 ## Task 4
 
+## Task 7
+**Creating json template file for ARM**
+```bash
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "rgName": {
+            "type": "string",
+            "defaultValue": "ARMResourceGroup",
+            "metadata": {
+                "description": "Name of the Resource Group"
+            }
+        },
+        "rgLocation": {
+            "type": "string",
+            "defaultValue": "eastus",
+            "metadata": {
+                "description": "Location of the Resource Group"
+            }
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": {
+                "environment": "development",
+                "project": "ARMDemo",
+                "createdBy": "ARM Template"
+            },
+            "metadata": {
+                "description": "Tags for the Resource Group"
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2021-04-01",
+            "name": "[parameters('rgName')]",
+            "location": "[parameters('rgLocation')]",
+            "tags": "[parameters('tags')]",
+            "properties": {}
+        }
+    ]
+}
+```
+
+**Logging to Azure in CLI and applying the config**
+```bash
+$ az login
+$ az deployment sub create \
+  --location eastus \
+  --template-file rg-template123987.json
+```
+
+**Listing present RGs and searching for the newly created one**
+![Screenshot](screenshots_task7/cli-output.png)
+
+**Custom tags could be applied with the following command**
+```bash
+$ az deployment sub create \
+  --location eastus \
+  --template-file rg-template123987.json \
+  --parameters tags="{'environment':'production','department':'IT','owner':'DevOps'}"
+```
+
+**Looking into the Azure Portal and checking the custom tags attached previously**
+![Screenshot](screenshots_task7/rg-created-tags.png)
+
+## Task 8
+
+
 
 
 
