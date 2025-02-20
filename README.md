@@ -445,6 +445,189 @@ localhost ansible_connection=local
       loop: "{{ rg_facts.resourcegroups }}"
 ```
 
+## Task 5
+**Ansible playbook**
+```bash
+# Directory structure
+├── inventory.ini
+├── group_vars/
+│   └── all.yml
+├── roles/
+│   └── nginx/
+│       ├── tasks/
+│       │   └── main.yml
+│       └── files/
+│           └── index.html
+└── deploy_vm.yml
+
+# inventory.ini
+[azure]
+localhost ansible_connection=local
+
+# group_vars/all.yml
+---
+location: eastus
+resource_group: "ansible-demo-rg"
+vnet_name: "demo-vnet"
+subnet_name: "demo-subnet"
+nsg_name: "demo-nsg"
+vm_name: "demo-vm"
+admin_username: "azureuser"
+vm_size: "Standard_B1s"
+
+# roles/nginx/files/index.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to Ansible-Deployed Server</title>
+</head>
+<body>
+    <h1>Hello from Azure!</h1>
+    <p>This server was configured using Ansible.</p>
+</body>
+</html>
+
+# roles/nginx/tasks/main.yml
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  become: yes
+
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: present
+  become: yes
+
+- name: Copy custom index.html
+  copy:
+    src: index.html
+    dest: /var/www/html/index.html
+    mode: '0644'
+  become: yes
+
+- name: Ensure Nginx is running
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+  become: yes
+
+# deploy_vm.yml
+---
+- name: Deploy Azure Infrastructure
+  hosts: localhost
+  connection: local
+  vars_files:
+    - group_vars/all.yml
+    - credentials.yml
+
+  tasks:
+    - name: Generate SSH key pair
+      openssh_keypair:
+        path: "~/{{ vm_name }}_ssh_key"
+        type: rsa
+        size: 4096
+      register: ssh_key
+
+    - name: Create resource group
+      azure.azcollection.azure_rm_resourcegroup:
+        name: "{{ resource_group }}"
+        location: "{{ location }}"
+        state: present
+
+    - name: Create virtual network
+      azure.azcollection.azure_rm_virtualnetwork:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vnet_name }}"
+        address_prefixes: "10.0.0.0/16"
+
+    - name: Create subnet
+      azure.azcollection.azure_rm_subnet:
+        resource_group: "{{ resource_group }}"
+        name: "{{ subnet_name }}"
+        address_prefix: "10.0.1.0/24"
+        virtual_network: "{{ vnet_name }}"
+
+    - name: Create Network Security Group
+      azure.azcollection.azure_rm_securitygroup:
+        resource_group: "{{ resource_group }}"
+        name: "{{ nsg_name }}"
+        rules:
+          - name: SSH
+            protocol: Tcp
+            destination_port_range: 22
+            access: Allow
+            priority: 100
+            direction: Inbound
+            source_address_prefix: "{{ ansible_env.SSH_CLIENT.split(' ')[0] }}"
+          - name: HTTP
+            protocol: Tcp
+            destination_port_range: 80
+            access: Allow
+            priority: 101
+            direction: Inbound
+            source_address_prefix: "*"
+
+    - name: Create public IP
+      azure.azcollection.azure_rm_publicipaddress:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-ip"
+        allocation_method: Static
+      register: public_ip
+
+    - name: Create NIC
+      azure.azcollection.azure_rm_networkinterface:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-nic"
+        virtual_network: "{{ vnet_name }}"
+        subnet: "{{ subnet_name }}"
+        security_group: "{{ nsg_name }}"
+        ip_configurations:
+          - name: ipconfig1
+            public_ip_address_name: "{{ vm_name }}-ip"
+            primary: yes
+
+    - name: Create VM
+      azure.azcollection.azure_rm_virtualmachine:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}"
+        vm_size: "{{ vm_size }}"
+        admin_username: "{{ admin_username }}"
+        ssh_password_enabled: false
+        ssh_public_keys:
+          - path: "/home/{{ admin_username }}/.ssh/authorized_keys"
+            key_data: "{{ ssh_key.public_key }}"
+        network_interfaces: "{{ vm_name }}-nic"
+        image:
+          offer: 0001-com-ubuntu-server-jammy
+          publisher: Canonical
+          sku: '22_04-lts'
+          version: latest
+      register: vm
+
+    - name: Wait for SSH to come up
+      wait_for:
+        host: "{{ public_ip.state.ip_address }}"
+        port: 22
+        delay: 10
+        timeout: 300
+
+    - name: Add host to inventory
+      add_host:
+        name: "{{ public_ip.state.ip_address }}"
+        groups: new_vm
+        ansible_user: "{{ admin_username }}"
+        ansible_ssh_private_key_file: "~/{{ vm_name }}_ssh_key"
+
+- name: Configure VM
+  hosts: new_vm
+  roles:
+    - nginx
+```
+![Screenshot](screenshots_task5/vm-created.png)
+
 ## Task 7
 **Creating json template file for ARM**
 ```bash
