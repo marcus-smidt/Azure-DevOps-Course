@@ -400,6 +400,50 @@ module "compute" {
 ![Screenshot](screenshots_task3/portal-resources.png)
 
 ## Task 4
+**Ansible setup and dependencies installation**
+```bash
+$ sudo apt update
+$ sudo apt install -y python3-pip
+$ pip3 install ansible
+#azure collection and requirements
+$ ansible-galaxy collection install azure.azcollection
+$ pip3 install -r ~/.ansible/collections/ansible_collections/azure/azcollection/requirements-azure.txt
+$ $ az ad sp create-for-rbac --name "task4sp" --role Contributor --scopes /subscriptions/x-x-x-x-x/resourceGroups/Markiianxxxxx
+```
+**Ansible Vault**
+```bash
+$ ansible-vault create credentials.yml
+```
+
+**Inventory**
+```bash
+[azure]
+localhost ansible_connection=local
+```
+
+**Ansible Playbook**
+```bash
+---
+- name: List Azure Resource Groups
+  hosts: localhost
+  connection: local
+  vars_files:
+    - credentials.yml
+  
+  tasks:
+    - name: Get Resource Group facts
+      azure.azcollection.azure_rm_resourcegroup_info:
+        client_id: "{{ AZURE_CLIENT_ID }}"
+        secret: "{{ AZURE_SECRET }}"
+        tenant: "{{ AZURE_TENANT }}"
+        subscription_id: "{{ AZURE_SUBSCRIPTION_ID }}"
+      register: rg_facts
+
+    - name: Display Resource Groups
+      debug:
+        msg: "Resource Group: {{ item.name }} in location: {{ item.location }}"
+      loop: "{{ rg_facts.resourcegroups }}"
+```
 
 ## Task 7
 **Creating json template file for ARM**
