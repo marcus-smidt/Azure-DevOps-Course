@@ -1202,6 +1202,27 @@ $ az group delete --name myResourceGroup --yes
 
 ## Task 12 (skipped as optional)
 ## Task 13 
+**Linux VM created for testing (Ubuntu 22.04)**
+![Screenshot](screenshots_task13/1testing-vm-created.png)
+
+**Prerequisites installed for Diagnostics (python2)**
+![Screenshot](screenshots_task13/2py-installed.png)
+
+**Network Out metric review on the metrics tab**
+![Screenshot](screenshots_task13/3network-out.png)
+
+![Screenshot](screenshots_task13/4dashboard.png)
+
+**Creating sample metrics alert and testing it's triggering (Action Group)**
+![Screenshot](screenshots_task13/5alert-created.png)
+![Screenshot](screenshots_task13/6alert-triggered.png)
+
+
+
+
+
+
+
 
 
 
