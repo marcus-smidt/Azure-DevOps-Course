@@ -48,6 +48,20 @@ $ git push --set-upstream origin feature-enhancement
 ![Screenshot](screenshots_task2/2pr-completed.png)
 
 ## Task 3
+**Minimal number of reviewer added to ADO Repos main branch**
+![Screenshot](screenshots_task3/1policy-added.png)
+
+**Mandatory reviewer (admin) added to the main branch**
+![Screenshot](screenshots_task3/2reviewer-policy.png)
+
+**Build policy in place as well (validating code by pre-merging and building pull request changes)**
+![Screenshot](screenshots_task3/3build-policy-added.png)
+
+**Branch policies in action (PR initiated and actions automatically performed)**
+![Screenshot](screenshots_task3/4pr-initiated.png)
+
+## Task 4
+
 
 
 
