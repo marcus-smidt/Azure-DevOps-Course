@@ -61,6 +61,80 @@ $ git push --set-upstream origin feature-enhancement
 ![Screenshot](screenshots_task3/4pr-initiated.png)
 
 ## Task 4
+**New repo MySampleApp was created; showing code sample**
+![Screenshot](screenshots_task4/1repo-created.png)
+![Screenshot](screenshots_task4/sample-node-js.png)
+
+**Azure DevOps Pipeline YAML code**
+```bash
+trigger:
+- main
+
+pool:
+  name: MyLinux
+  demands:
+    - agent.name -equals myAgent
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '18.x'
+  displayName: 'Install Node.js'
+
+- script: |
+    npm install
+  displayName: 'Install dependencies'
+
+- script: |
+    npm run build
+  displayName: 'Build application'
+
+- script: |
+    npm test
+  displayName: 'Run tests'
+
+# Use a different approach for creating the artifact
+- script: |
+    npm install archiver --no-save
+    node -e "
+    const fs = require('fs');
+    const path = require('path');
+    const archiver = require('archiver');
+    
+    // Create a file to stream archive data to
+    const output = fs.createWriteStream('$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip');
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    
+    output.on('close', () => {
+      console.log('Archive created successfully');
+    });
+    
+    archive.on('error', (err) => {
+      throw err;
+    });
+    
+    archive.pipe(output);
+    
+    // Add the files
+    archive.directory('dist/', false);
+    archive.file('package.json', { name: 'package.json' });
+    
+    archive.finalize();
+    "
+  displayName: 'Create archive'
+    
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+```
+
+**Running the pipeline and reviewing the bild details**
+![Screenshot](screenshots_task4/pipeline-successful-run.png)
+![Screenshot](screenshots_task4/pipeline-successful-1.png)
+
+## Task 5
 
 
 
