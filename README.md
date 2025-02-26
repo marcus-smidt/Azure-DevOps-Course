@@ -135,7 +135,141 @@ steps:
 ![Screenshot](screenshots_task4/pipeline-successful-1.png)
 
 ## Task 5
+**Azure DevOps YAML file**
+```bash
+# Azure DevOps Pipeline for Node.js Application with Azure Web App Deployment
+trigger:
+- main
 
+# Define variables for reuse
+variables:
+  # Build configuration
+  buildConfiguration: 'Release'
+  # Azure Web App name - replace with your actual web app name
+  webAppName: 'MySampleNodeApp'
+  # Azure service connection name - replace with your actual service connection
+  azureSubscription: 'task5connection'
+  # Node.js version
+  nodeVersion: '18.x'
+
+# Define the stages of the pipeline
+stages:
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+  - job: BuildJob
+    displayName: 'Build Node.js App'
+    pool:
+     name: MyLinux
+     demands:
+     - agent.name -equals myAgent
+    
+    steps:
+    # Set up Node.js environment
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '$(nodeVersion)'
+      displayName: 'Install Node.js'
+    
+    # Install dependencies
+    - script: |
+        npm install
+      displayName: 'Install dependencies'
+    
+    # Run build script
+    - script: |
+        npm run build
+      displayName: 'Build application'
+    
+    # Run tests
+    - script: |
+        npm test
+      displayName: 'Run tests'
+    
+    # Archive files for deployment
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: '$(System.DefaultWorkingDirectory)'
+        Contents: |
+          dist/**
+          node_modules/**
+          package.json
+          web.config
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+      displayName: 'Copy files for artifact'
+    
+    # Create web.config for Azure Web App (if it doesn't exist)
+    - script: |
+        if [ ! -f "$(Build.ArtifactStagingDirectory)/web.config" ]; then
+          echo '<?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <system.webServer>
+              <handlers>
+                <add name="iisnode" path="app.js" verb="*" modules="iisnode" />
+              </handlers>
+              <rewrite>
+                <rules>
+                  <rule name="myapp">
+                    <match url="/*" />
+                    <action type="Rewrite" url="app.js" />
+                  </rule>
+                </rules>
+              </rewrite>
+              <iisnode watchedFiles="web.config;*.js" />
+            </system.webServer>
+          </configuration>' > $(Build.ArtifactStagingDirectory)/web.config
+        fi
+      displayName: 'Create web.config if not exists'
+    
+    # Publish build artifacts
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+      displayName: 'Publish artifacts'
+
+- stage: Deploy
+  displayName: 'Deploy Stage'
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - deployment: DeployJob
+    displayName: 'Deploy to Azure Web App'
+    environment: 'Production'  # You can create environments in Azure DevOps
+    pool:
+     name: MyLinux
+     demands:
+     - agent.name -equals myAgent
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          # Deploy to Azure Web App
+          - task: AzureWebApp@1
+            displayName: 'Deploy Azure Web App'
+            inputs:
+              azureSubscription: 'task5connection'
+              appType: 'webApp'
+              appName: 'task5webapp'
+              package: '$(Pipeline.Workspace)/drop'
+              deploymentMethod: 'auto'
+              # Set startup command if needed (uncomment if required)
+              # appSettings: 'npm start'
+```
+
+**Pipeline stages and running process**
+![Screenshot](screenshots_task5/build-ok.png)
+![Screenshot](screenshots_task5/deploy-approved.png)
+![Screenshot](screenshots_task5/deploy-comleted.png)
+![Screenshot](screenshots_task5/deploy-completed2.png)
+![Screenshot](screenshots_task5/deploy-in-action.png)
+![Screenshot](screenshots_task5/deploy-in-action1.png)
+
+**Verifying the Node.js app is running**
+![Screenshot](screenshots_task5/app-running.png)
+
+## Task 6 (skipped)
 
 
 
