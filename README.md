@@ -269,7 +269,117 @@ stages:
 **Verifying the Node.js app is running**
 ![Screenshot](screenshots_task5/app-running.png)
 
-## Task 6 (skipped)
+## Task 8
+**Bicep template file for creating Azure Storage Account**
+```bash
+@description('Name of the Storage Account')
+param storageAccountName string
+
+@description('Location for the Storage Account')
+param location string = resourceGroup().location
+
+@description('Number of days to retain deleted blobs')
+@minValue(1)
+@maxValue(365)
+param softDeleteRetentionDays int = 7
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
+  name: storageAccountName
+  location: location
+  sku: {
+    name: 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+  properties: {
+    minimumTlsVersion: 'TLS1_2'
+    allowBlobPublicAccess: false
+    publicNetworkAccess: 'Enabled'
+    networkAcls: {
+      defaultAction: 'Deny'
+      bypass: 'AzureServices'
+    }
+    supportsHttpsTrafficOnly: true
+    encryption: {
+      services: {
+        blob: {
+          enabled: true
+          keyType: 'Account'
+        }
+      }
+      keySource: 'Microsoft.Storage'
+    }
+    deletionPolicy: {
+      enabled: true
+    }
+    blobServiceProperties: {
+      deleteRetentionPolicy: {
+        enabled: true
+        days: softDeleteRetentionDays
+      }
+    }
+  }
+  tags: {
+    environment: 'production'
+    purpose: 'secure-storage'
+  }
+}
+
+output storageAccountName string = storageAccountName
+```
+
+**Azure DevOps YAML pipeline file**
+```bash
+trigger:
+- main
+
+pool:
+  name: MyLinux
+  demands:
+    - agent.name -equals myAgent
+
+variables:
+  azureSubscription: 'task5connection'  
+  resourceGroupName: 'Markiianxxxxx'          
+  location: 'eastus'                                
+  bicepFile: 'storage-template123987.bicep'  
+  storageAccountName: 'mystacc3866d$(Build.BuildId)'                     
+
+stages:
+- stage: Deploy
+  displayName: 'Deploy Bicep to Azure'
+  jobs:
+  - job: DeployBicep
+    displayName: 'Deploy Storage Account'
+    steps:
+    - script: |
+        sudo apt-get update
+        sudo apt-get install -y python3 python3-pip
+      displayName: 'Install Python'
+
+    - script: |
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+      displayName: 'Install Azure CLI'
+
+    - task: AzureCLI@2
+      displayName: 'Deploy Bicep Template'
+      inputs:
+        azureSubscription: $(azureSubscription)
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az deployment group create \
+            --resource-group $(resourceGroupName) \
+            --template-file $(bicepFile) \
+            --parameters storageAccountName=$(storageAccountName) location=$(location)
+```
+
+**Reviewing pipeline run results and service created in the Azure Portal**
+![Screenshot](screenshots_task8/pipeline-run-ok.png)
+![Screenshot](screenshots_task8/service-deployed.png)
+
+## Task 9
+
+
 
 
 
