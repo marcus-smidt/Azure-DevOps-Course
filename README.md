@@ -378,6 +378,269 @@ stages:
 ![Screenshot](screenshots_task8/service-deployed.png)
 
 ## Task 9
+**Azure DevOps YAML pipeline file contents**
+```bash
+trigger:
+- main
+
+pool:
+  name: MyLinux
+  demands:
+    - agent.name -equals myAgent
+
+variables:
+  - group: "varGroupADO"
+
+stages:
+- stage: Plan
+  displayName: 'Terraform Plan'
+  jobs:
+  - job: TerraformPlan
+    displayName: 'Terraform Plan'
+    steps:
+    # Debug: Verify directory structure
+    - script: |
+        echo "Root directory:"
+        ls -la $(System.DefaultWorkingDirectory)
+        echo "Terraform directory:"
+        ls -la $(System.DefaultWorkingDirectory)
+      displayName: 'Verify Directory Structure'
+
+    # Install unzip if not present
+    - script: |
+        sudo apt-get update && sudo apt-get install -y unzip
+      displayName: 'Install unzip'
+      workingDirectory: $(System.DefaultWorkingDirectory)
+
+    # Install Terraform
+    - script: |
+        #!/bin/bash
+        set -euo pipefail
+        TERRAFORM_VERSION="1.3.0"
+        echo "Downloading Terraform version ${TERRAFORM_VERSION}..."
+        curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip
+        unzip terraform.zip
+        sudo mv terraform /usr/local/bin/
+        rm terraform.zip
+        terraform version
+      displayName: 'Install Terraform'
+      workingDirectory: $(System.DefaultWorkingDirectory)
+
+    # Azure CLI Login using the Service Connection
+    - task: AzureCLI@2
+      displayName: 'Azure Login'
+      inputs:
+        azureSubscription: 'task9connection'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az account show
+
+    # Initialize Terraform with backend config override
+    - script: |
+        terraform init \
+          -backend-config="storage_account_name=$(storageAccountName)"
+      displayName: 'Terraform Init'
+      workingDirectory: $(System.DefaultWorkingDirectory)
+
+    # Run Terraform plan (without explicit credentials)
+    - script: |
+        terraform plan -out=tfplan -input=false 
+      displayName: 'Terraform Plan'
+      workingDirectory: $(System.DefaultWorkingDirectory)
+
+    # Publish the tfplan artifact for use in the Deploy stage
+    - publish: $(System.DefaultWorkingDirectory)/tfplan
+      artifact: tfplan
+      displayName: 'Publish tfplan artifact'
+
+- stage: Deploy
+  displayName: 'Terraform Apply'
+  dependsOn: Plan
+  condition: succeeded()
+  jobs:
+  - job: TerraformApply
+    displayName: 'Terraform Apply'
+    steps:
+    # Install unzip on the deploy agent
+    - script: |
+        sudo apt-get update && sudo apt-get install -y unzip
+      displayName: 'Install unzip'
+      workingDirectory: $(System.DefaultWorkingDirectory)
+
+    # Re-install Terraform on the deploy agent
+    - script: |
+        #!/bin/bash
+        set -euo pipefail
+        TERRAFORM_VERSION="1.3.0"
+        echo "Downloading Terraform version ${TERRAFORM_VERSION}..."
+        curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o terraform.zip
+        unzip terraform.zip
+        sudo mv terraform /usr/local/bin/
+        rm terraform.zip
+        terraform version
+      displayName: 'Install Terraform'
+      workingDirectory: $(System.DefaultWorkingDirectory)
+
+    # Azure CLI Login before Terraform Apply
+    - task: AzureCLI@2
+      displayName: 'Azure Login'
+      inputs:
+        azureSubscription: 'task9connection'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az account set --subscription $(azureSubscription)
+
+    # Download the tfplan artifact from the Plan stage
+    - download: current
+      artifact: tfplan
+      displayName: 'Download tfplan artifact'
+
+    # Reinitialize Terraform with the same backend override
+    - script: |
+        terraform init  \
+          -backend-config="storage_account_name=$(storageAccountName)"
+      displayName: 'Terraform Init with Lockfile'
+      workingDirectory: $(System.DefaultWorkingDirectory)
+
+    # Apply the saved Terraform plan
+    - script: |
+        terraform apply -auto-approve $(Pipeline.Workspace)/tfplan/tfplan
+      displayName: 'Terraform Apply'
+      workingDirectory: $(System.DefaultWorkingDirectory)
+```
+
+**Overview of the IDE files structure and sample TF file**
+![Screenshot](screenshots_task9/ide-setup.png)
+
+```bash
+resource "azurerm_virtual_network" "practice6-vnet" {
+  name                = "practice6-vnet"
+  address_space       = ["10.0.0.0/16"]
+  location            = data.azurerm_resource_group.practice6-rg.location
+  resource_group_name = data.azurerm_resource_group.practice6-rg.name
+}
+
+resource "azurerm_subnet" "practice6-subnet" {
+  name                 = "practice6-subnet"
+  resource_group_name  = data.azurerm_resource_group.practice6-rg.name
+  virtual_network_name = azurerm_virtual_network.practice6-vnet.name
+  address_prefixes     = ["10.0.1.0/24"]
+}
+
+resource "azurerm_network_security_group" "practice6-nsg" {
+  name                = "practice6-nsg"
+  location            = data.azurerm_resource_group.practice6-rg.location
+  resource_group_name = data.azurerm_resource_group.practice6-rg.name
+
+  security_rule {
+    name                       = "Allow-SSH"
+    priority                   = 1001
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Allow-HTTP"
+    priority                   = 1002
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+}
+
+resource "azurerm_network_interface" "practice6-nic" {
+  name                = "practice6-nic"
+  location            = data.azurerm_resource_group.practice6-rg.location
+  resource_group_name = data.azurerm_resource_group.practice6-rg.name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.practice6-subnet.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.practice6-ip.id
+  }
+}
+
+resource "azurerm_public_ip" "practice6-ip" {
+  name                = "practice6-ip"
+  location            = data.azurerm_resource_group.practice6-rg.location
+  resource_group_name = data.azurerm_resource_group.practice6-rg.name
+  allocation_method   = "Static"
+  sku                 = "Basic"
+}
+
+resource "azurerm_network_interface_security_group_association" "practice6-association" {
+  network_interface_id      = azurerm_network_interface.practice6-nic.id
+  network_security_group_id = azurerm_network_security_group.practice6-nsg.id
+}
+
+resource "azurerm_linux_virtual_machine" "practice6-vm" {
+  name                  = "practice6-vm"
+  resource_group_name   = data.azurerm_resource_group.practice6-rg.name
+  location              = data.azurerm_resource_group.practice6-rg.location
+  size                  = "Standard_B1s"
+  admin_username        = "azureuser"
+  network_interface_ids = [azurerm_network_interface.practice6-nic.id]
+  admin_ssh_key {
+    username   = "azureuser"
+    public_key = file("./id_rsa_practice2.pub")
+  }
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+    disk_size_gb         = 30
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "18.04-LTS"
+    version   = "latest"
+  }
+}
+
+# resource "null_resource" "provisioner" {
+#   depends_on = [azurerm_linux_virtual_machine.practice6-vm]
+
+#   provisioner "remote-exec" {
+#     inline = [
+#       "sudo apt update -y",
+#       "sudo apt install nginx -y"
+#     ]
+
+#     connection {
+#       type        = "ssh"
+#       user        = "azureuser"
+#       private_key = file("../practice2-3_terraform/id_rsa_practice2")
+#       host        = azurerm_public_ip.practice6-ip.ip_address
+#     }
+#   }
+# }
+```
+
+**Azure Pipeline execution flow and results**
+![Screenshot](screenshots_task9/terraform-apply-confirmed.png)
+![Screenshot](screenshots_task9/terraform-apply-completed.png)
+![Screenshot](screenshots_task9/portal-overview.png)
+![Screenshot](screenshots_task9/all-green.png)
+
+
+
+
+
+
 
 
 
