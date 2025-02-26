@@ -633,6 +633,7 @@ resource "azurerm_linux_virtual_machine" "practice6-vm" {
 **Azure Pipeline execution flow and results**
 ![Screenshot](screenshots_task9/terraform-apply-confirmed.png)
 ![Screenshot](screenshots_task9/terraform-apply-completed.png)
+![Screenshot](screenshots_task9/apply-details.png)
 ![Screenshot](screenshots_task9/portal-overview.png)
 ![Screenshot](screenshots_task9/all-green.png)
 
